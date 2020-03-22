@@ -1,0 +1,156 @@
+Linux scc-lab 5.5.11B073040047 #1 SMP Sun Mar 22 23:30:32 CST 2020 x86_64 x86_64 x86_64 GNU/Linux
+br-a554d23875c7: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.18.0.1  netmask 255.255.0.0  broadcast 172.18.255.255
+        inet6 fe80::42:3ff:feb7:78fe  prefixlen 64  scopeid 0x20<link>
+        ether 02:42:03:b7:78:fe  txqueuelen 0  (Ethernet)
+        RX packets 16  bytes 19295 (19.2 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 111  bytes 18198 (18.1 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+br-ebddce954d00: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 172.19.0.1  netmask 255.255.255.0  broadcast 172.19.0.255
+        ether 02:42:43:72:88:ec  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+docker0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 172.17.0.1  netmask 255.255.0.0  broadcast 172.17.255.255
+        inet6 fe80::42:12ff:fe10:4d91  prefixlen 64  scopeid 0x20<link>
+        ether 02:42:12:10:4d:91  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 96  bytes 17045 (17.0 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+eno1: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 140.117.176.110  netmask 255.255.255.0  broadcast 140.117.176.255
+        inet6 fe80::b1c3:5b25:e101:5940  prefixlen 64  scopeid 0x20<link>
+        ether 0c:9d:92:5b:92:c5  txqueuelen 1000  (Ethernet)
+        RX packets 11848461  bytes 787846118 (787.8 MB)
+        RX errors 0  dropped 2872  overruns 0  frame 0
+        TX packets 156235  bytes 209471711 (209.4 MB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device interrupt 16  memory 0xa1200000-a1220000  
+
+enp4s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 140.117.176.135  netmask 255.255.255.0  broadcast 140.117.176.255
+        inet6 fe80::3a97:8da2:8fb9:9bc1  prefixlen 64  scopeid 0x20<link>
+        ether 0c:9d:92:5b:92:c6  txqueuelen 1000  (Ethernet)
+        RX packets 9741162  bytes 590500234 (590.5 MB)
+        RX errors 0  dropped 2344  overruns 0  frame 0
+        TX packets 898  bytes 339730 (339.7 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+        device memory 0xa1100000-a117ffff  
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 1253  bytes 159396 (159.3 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 1253  bytes 159396 (159.3 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+veth2bb5940: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::e84f:20ff:fefc:e25  prefixlen 64  scopeid 0x20<link>
+        ether ea:4f:20:fc:0e:25  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 135  bytes 24780 (24.7 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+veth4c253f9: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::34d5:5eff:fe8e:fc0a  prefixlen 64  scopeid 0x20<link>
+        ether 36:d5:5e:8e:fc:0a  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 134  bytes 24670 (24.6 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+veth8741abd: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::e842:e7ff:fe6c:8d4c  prefixlen 64  scopeid 0x20<link>
+        ether ea:42:e7:6c:8d:4c  txqueuelen 0  (Ethernet)
+        RX packets 16  bytes 19519 (19.5 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 135  bytes 23193 (23.1 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+veth8bc2779: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::7006:e8ff:fe31:31b2  prefixlen 64  scopeid 0x20<link>
+        ether 72:06:e8:31:31:b2  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 134  bytes 24469 (24.4 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+veth9e8744d: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::468:d8ff:fe30:a5f6  prefixlen 64  scopeid 0x20<link>
+        ether 06:68:d8:30:a5:f6  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 132  bytes 23659 (23.6 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+vethf9542ab: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet6 fe80::dc8c:75ff:fe50:8dde  prefixlen 64  scopeid 0x20<link>
+        ether de:8c:75:50:8d:de  txqueuelen 0  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 134  bytes 24438 (24.4 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+virbr0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        inet 192.168.122.1  netmask 255.255.255.0  broadcast 192.168.122.255
+        ether 52:54:00:2f:11:be  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+virbr0-nic: flags=4098<BROADCAST,MULTICAST>  mtu 1500
+        ether 52:54:00:2f:11:be  txqueuelen 1000  (Ethernet)
+        RX packets 0  bytes 0 (0.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+
+PING 140.117.11.1 (140.117.11.1) 56(84) bytes of data.
+64 bytes from 140.117.11.1: icmp_seq=1 ttl=251 time=0.253 ms
+64 bytes from 140.117.11.1: icmp_seq=2 ttl=251 time=0.326 ms
+64 bytes from 140.117.11.1: icmp_seq=3 ttl=251 time=0.338 ms
+64 bytes from 140.117.11.1: icmp_seq=4 ttl=251 time=0.325 ms
+64 bytes from 140.117.11.1: icmp_seq=5 ttl=251 time=0.289 ms
+64 bytes from 140.117.11.1: icmp_seq=6 ttl=251 time=0.254 ms
+64 bytes from 140.117.11.1: icmp_seq=7 ttl=251 time=0.230 ms
+64 bytes from 140.117.11.1: icmp_seq=8 ttl=251 time=0.275 ms
+64 bytes from 140.117.11.1: icmp_seq=9 ttl=251 time=0.290 ms
+64 bytes from 140.117.11.1: icmp_seq=10 ttl=251 time=0.326 ms
+64 bytes from 140.117.11.1: icmp_seq=11 ttl=251 time=0.432 ms
+64 bytes from 140.117.11.1: icmp_seq=12 ttl=251 time=0.312 ms
+64 bytes from 140.117.11.1: icmp_seq=13 ttl=251 time=0.374 ms
+64 bytes from 140.117.11.1: icmp_seq=14 ttl=251 time=0.239 ms
+64 bytes from 140.117.11.1: icmp_seq=15 ttl=251 time=0.227 ms
+64 bytes from 140.117.11.1: icmp_seq=16 ttl=251 time=0.303 ms
+64 bytes from 140.117.11.1: icmp_seq=17 ttl=251 time=0.240 ms
+64 bytes from 140.117.11.1: icmp_seq=18 ttl=251 time=0.268 ms
+64 bytes from 140.117.11.1: icmp_seq=19 ttl=251 time=0.347 ms
+64 bytes from 140.117.11.1: icmp_seq=20 ttl=251 time=0.304 ms
+64 bytes from 140.117.11.1: icmp_seq=21 ttl=251 time=0.310 ms
+64 bytes from 140.117.11.1: icmp_seq=22 ttl=251 time=0.315 ms
+64 bytes from 140.117.11.1: icmp_seq=23 ttl=251 time=0.333 ms
+64 bytes from 140.117.11.1: icmp_seq=24 ttl=251 time=0.310 ms
+64 bytes from 140.117.11.1: icmp_seq=25 ttl=251 time=0.356 ms
+64 bytes from 140.117.11.1: icmp_seq=26 ttl=251 time=0.364 ms
+64 bytes from 140.117.11.1: icmp_seq=27 ttl=251 time=0.355 ms
+64 bytes from 140.117.11.1: icmp_seq=28 ttl=251 time=0.291 ms
+64 bytes from 140.117.11.1: icmp_seq=29 ttl=251 time=0.325 ms
+64 bytes from 140.117.11.1: icmp_seq=30 ttl=251 time=0.410 ms
+64 bytes from 140.117.11.1: icmp_seq=31 ttl=251 time=0.277 ms
+
+--- 140.117.11.1 ping statistics ---
+31 packets transmitted, 31 received, 0% packet loss, time 30725ms
+rtt min/avg/max/mdev = 0.227/0.309/0.432/0.052 ms
