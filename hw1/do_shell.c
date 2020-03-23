@@ -2,6 +2,6 @@
 #include <stdio.h>
 
 int main(int argc, char **argv, char **envp){
-    printf("YOU ARE IN MY SHELL!\n");
-    return execve("/bin/sh", argv, envp);
+    printf("YOU ARE IN MY SHELL!\n\n");
+    return execve("/bin/dash", argv, envp);
 }
