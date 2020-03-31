@@ -7,20 +7,21 @@
 
 using namespace std;
 
-string do_cmd(string cmd){
-    system(cmd.c_str());
+bool do_cmd(string cmd){
+    return system(cmd.c_str());
 }
 
-string putPWD(){
-    do_cmd("pwd -P");
+bool putPWD(){
+    return do_cmd("pwd -P");
 }
 
 void print_prompt(){
     char promptSign = '$';
+    putPWD();
     //string id_str = do_cmd(string("id"));
     //cout << id_str.substr(id_str.find("uid=")) << endl;
     //if(id_str.substr(4, )
-    //cout << getPWD() <<  promptSign << ' ';
+    cout <<  promptSign << ' ';
 }
 
 int main()
