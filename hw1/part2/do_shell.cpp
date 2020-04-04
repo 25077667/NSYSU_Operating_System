@@ -10,11 +10,15 @@ using namespace std;
 int do_cmd(string cmd);
 string get_user_inputs();
 vector<string> format_command(string commands);
-inline bool bothAreSpaces(char lhs, char rhs) { return (lhs == rhs) && (lhs == ' '); }
+inline bool bothAreSpaces(char lhs, char rhs)
+{
+    return (lhs == rhs) && (lhs == ' ');
+}
 void print_prompt();
 int help();
 
-int main() {
+int main()
+{
     cout << "YOU ARE IN MY SHELL!" << endl;
     cout << "Type \'help\' to get helps." << endl;
     while (true) {
@@ -26,13 +30,16 @@ int main() {
     EXIT_SHELL(EXIT_SUCCESS);
 }
 
-int help() {
+int help()
+{
     cout << "This is HELP" << endl;
+    cout << "Not support stderr yet" << endl;
     cout << "Will compelete single process first!" << endl;
     return 0;
 }
 
-void print_prompt() {
+void print_prompt()
+{
     char promptSign = '$';
     /*
      * TODO: Add user identify to change the sign
@@ -42,7 +49,8 @@ void print_prompt() {
     cout << promptSign << ' ';
 }
 
-string get_user_inputs() {
+string get_user_inputs()
+{
     string single_cmd;
     string prev_line_cmd;
     bool keepTyping = true;
@@ -57,12 +65,14 @@ string get_user_inputs() {
             keepTyping = true;
         }
 
-        if (keepTyping) prev_line_cmd = single_cmd;
+        if (keepTyping)
+            prev_line_cmd = single_cmd;
     }
     return single_cmd;
 }
 
-int do_cmd(string cmd) {
+int do_cmd(string cmd)
+{
     /* Return 0 if execution succeed */
     int exe_result = 0;
     if (cmd == "help")
@@ -75,7 +85,8 @@ int do_cmd(string cmd) {
     return exe_result;
 }
 
-vector<string> format_command(string commands) {
+vector<string> format_command(string commands)
+{
     /* Remove duplicate <space> */
     commands += ";";
     auto new_end = unique(commands.begin(), commands.end(), bothAreSpaces);
@@ -85,11 +96,11 @@ vector<string> format_command(string commands) {
     vector<string> command_set;
 
     /*
-    *  Priority table:
-    *  pipe > redirection > semicolon
-    * 
-    *  TODO: Maybe support "append" "stderr" "stdout" clearly redirection.
-    */
+     *  Priority table:
+     *  pipe > redirection > semicolon
+     *
+     *  TODO: Maybe support "append" "stderr" "stdout" clearly redirection.
+     */
     while (commands.length()) {
         auto found = commands.find("|");
         if (found != string::npos) {
