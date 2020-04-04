@@ -4,28 +4,27 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "linenoise.h"
+#include "proc.hpp"
 #define EXIT_SHELL(state) exit(state)
-
 using namespace std;
+
+string get_user_line();
 int do_cmd(string cmd);
-string get_user_inputs();
-vector<string> format_command(string commands);
-inline bool bothAreSpaces(char lhs, char rhs)
-{
-    return (lhs == rhs) && (lhs == ' ');
-}
-void print_prompt();
+vector<string> separate_command(string commands);
+string print_prompt();
 int help();
+bool bothAreSpaces(char lhs, char rhs);
 
 int main()
 {
     cout << "YOU ARE IN MY SHELL!" << endl;
     cout << "Type \'help\' to get helps." << endl;
     while (true) {
-        print_prompt();
-
-        string singleLine = get_user_inputs();
-        auto commands = format_command(singleLine);
+        string singleLine = get_user_line();
+        auto commands = separate_command(singleLine);
+        
+        
     }
     EXIT_SHELL(EXIT_SUCCESS);
 }
@@ -38,7 +37,7 @@ int help()
     return 0;
 }
 
-void print_prompt()
+string print_prompt()
 {
     char promptSign = '$';
     /*
@@ -46,29 +45,33 @@ void print_prompt()
      *       add user can self configurilze the prompt symbol
      */
 
-    cout << promptSign << ' ';
+    return promptSign + " ";
 }
 
-string get_user_inputs()
+string get_user_line()
 {
-    string single_cmd;
-    string prev_line_cmd;
-    bool keepTyping = true;
-
-    while (keepTyping && getline(cin, single_cmd)) {
-        keepTyping = false;
-        single_cmd = prev_line_cmd + single_cmd;
-
-        /* Only identify the last char is a '\' */
-        if (single_cmd.back() == '\\') {
-            single_cmd.pop_back();
-            keepTyping = true;
+    string singleLine;
+    while (true) {
+        auto line = linenoise(print_prompt().c_str());
+        if (line[0] != '\0' && line[0] != '/') {
+            singleLine = string(line);
+            linenoiseHistoryAdd(line);           /* Add to the history. */
+            linenoiseHistorySave("history.txt"); /* Save the history on disk. */
+            break;
+        } else if (!strncmp(line, "/historylen", 11)) {
+            /* The "/historylen" command will change the history len. */
+            int len = atoi(line + 11);
+            linenoiseHistorySetMaxLen(len);
+        } else if (!strncmp(line, "/mask", 5)) {
+            linenoiseMaskModeEnable();
+        } else if (!strncmp(line, "/unmask", 7)) {
+            linenoiseMaskModeDisable();
+        } else if (line[0] == '/') {
+            printf("Unreconized command: %s\n", line);
         }
-
-        if (keepTyping)
-            prev_line_cmd = single_cmd;
+        free(line);
     }
-    return single_cmd;
+    return singleLine;
 }
 
 int do_cmd(string cmd)
@@ -85,7 +88,7 @@ int do_cmd(string cmd)
     return exe_result;
 }
 
-vector<string> format_command(string commands)
+vector<string> separate_command(string commands)
 {
     /* Remove duplicate <space> */
     commands += ";";
@@ -130,4 +133,9 @@ vector<string> format_command(string commands)
     /* Redirect to */
 
     return command_set;
+}
+
+inline bool bothAreSpaces(char lhs, char rhs)
+{
+    return (lhs == rhs) && (lhs == ' ');
 }
