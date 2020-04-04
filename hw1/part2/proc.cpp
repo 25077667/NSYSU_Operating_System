@@ -2,50 +2,48 @@
 #include <cstring>
 #include <vector>
 using namespace std;
-#define BUFFER_SIZE 10000
-#define CHECK_FILE_EXIST(x) (x);
+#define BUFFER_SIZE 1000 /* Memory page takes 4K for cache*/
+#define CHECK_FILE_EXIST(x) (x)
 
-Proc::Proc()
+Proc::Proc(string cmd)
 {
     this->in_fd = stdin;
     this->out_fd = stdout;
     this->err_fd = stderr;
 
+    if (cmd.back() == ';')
+        cmd.pop_back();
+    this->command = cmd;
     this->prev = nullptr;
     this->next = nullptr;
 }
 
-Proc::Proc(Proc *left)
+Proc::Proc(Proc *_left, string cmd) : Proc(cmd)
 {
-    this->in_fd = stdin;
-    this->out_fd = stdout;
-    this->err_fd = stderr;
-
-    this->prev = left;
+    this->prev = _left;
     this->next = nullptr;
-    if (left)
+    if (_left)
         left->next = this;
 }
 
-Proc::Proc(Proc *left, Proc *right)
+Proc::Proc(Proc *_left, Proc *_right, string cmd) : Proc(cmd)
 {
-    this->in_fd = stdin;
-    this->out_fd = stdout;
-    this->err_fd = stderr;
-
-    this->prev = left;
-    this->next = right;
-    if (left)
-        left->next = this;
-    if (right)
-        right->prev = this;
+    this->prev = _left;
+    this->next = _right;
+    if (_left)
+        _left->next = this;
+    if (_right)
+        _right->prev = this;
 }
 
 Proc::~Proc()
 {
-    fclose(this->in_fd);
-    fclose(this->out_fd);
-    fclose(this->err_fd);
+    if (this->in_fd != stdin)
+        fclose(this->in_fd);
+    if (this->out_fd != stdout)
+        fclose(this->out_fd);
+    if (this->err_fd != stderr)
+        fclose(this->err_fd);
 }
 
 void Proc::setSTDIN(FILE *set)
@@ -88,11 +86,10 @@ FILE *Proc::doExecute()
         this->command.append(tmp);
         memset(tmp, 0, BUFFER_SIZE);
     }
-    auto will_be_out_fd = popen(this->command.c_str(), "r");
-    this->out_fd = will_be_out_fd;
+    this->out_fd = popen(this->command.c_str(), "r");
     if (this->next)
-        this->next->in_fd = will_be_out_fd;
-    return will_be_out_fd;  // The out_fd (read only)
+        this->next->in_fd = this->out_fd;
+    return this->out_fd;  // The out_fd (read only)
 }
 
 /**
@@ -155,7 +152,7 @@ void Proc::commandParser()
     /**
      * This identifier will get the last word to redirection
      *
-     * TODO: support stderr redirection, multi-redirection
+     * TODO: support stderr redirection, multi-redirection, append
      * string identifier;
      */
 
@@ -168,6 +165,9 @@ void Proc::commandParser()
             setAllIO(_in_fd, stdout, stderr);
             break;
         } else if (c == '>') {
+            if (this->next == nullptr)
+                errorCode = 1;
+            this->next->out_fd = fopen(this->next->command.c_str(), "w");
             setAllIO(_in_fd, _out_fd, stderr);
             break;
         } else if (c == '<') {
@@ -183,3 +183,36 @@ void Proc::commandParser()
         raiseError(errorCode);
     }
 }
+
+/////////////////////Cmd_q zone///////////////////////
+
+Cmd_q::Cmd_q()
+{
+    this->size = 0;
+    this->head = this->tail = nullptr;
+}
+
+Cmd_q::~Cmd_q()
+{
+    auto curr = this->head;
+    while (curr) {
+        auto nextOne = curr->next;
+        delete curr;  // Will invoke the distructor automatically
+        curr = nextOne;
+    }
+    this->size = 0;
+}
+
+bool Cmd_q::empty()
+{
+    return (bool) this->size;
+}
+
+void Cmd_q::push_back(Proc *ele) {}
+
+void Cmd_q::inspire() {}
+
+/**
+ * Execute all the commands and return the status code while exist
+ */
+int Cmd_q::execute() {}

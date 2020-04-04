@@ -23,8 +23,14 @@ int main()
     while (true) {
         string singleLine = get_user_line();
         auto commands = separate_command(singleLine);
-        
-        
+        Cmd_q q;
+        for(auto i : commands){
+            auto ele = new Proc(i);
+            q.push_back(ele);
+        }
+        q.inspire();
+        q.execute();
+        delete q;   //End of commands
     }
     EXIT_SHELL(EXIT_SUCCESS);
 }
@@ -34,6 +40,7 @@ int help()
     cout << "This is HELP" << endl;
     cout << "Not support stderr yet" << endl;
     cout << "Will compelete single process first!" << endl;
+    cout << "\'quit\' is the special command to exit(0)" << endl;
     return 0;
 }
 
@@ -74,6 +81,7 @@ string get_user_line()
     return singleLine;
 }
 
+/* This function might out of date, I'm going to be deleted */
 int do_cmd(string cmd)
 {
     /* Return 0 if execution succeed */
