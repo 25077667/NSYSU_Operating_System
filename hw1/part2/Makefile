@@ -3,7 +3,8 @@ CFLAGS = -Wall -W -Os -g
 OUT = myshell2
 
 obj: 
-	$(CC) $(CFLAGS) -c linenoise.c
+	gcc $(CFLAGS) -c linenoise.c
+	$(CC) $(CFLAGS) -c proc.cpp
 	$(CC) $(CFLAGS) -c do_shell.cpp
 
 all: $(obj)

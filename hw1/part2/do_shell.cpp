@@ -1,16 +1,19 @@
 #include <unistd.h>
+
 #include <algorithm>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
+
 #include "linenoise.h"
 #include "proc.hpp"
 #define EXIT_SHELL(state) exit(state)
 using namespace std;
 
 string get_user_line();
-int do_cmd(string cmd);
+int cmd_hook(string cmd);
 vector<string> separate_command(string commands);
 string print_prompt();
 int help();
@@ -22,15 +25,19 @@ int main()
     cout << "Type \'help\' to get helps." << endl;
     while (true) {
         string singleLine = get_user_line();
+
+        /* Check user diden't quit or something*/
+        if (cmd_hook(singleLine) != EXIT_SUCCESS)
+            break;
+
         auto commands = separate_command(singleLine);
         Cmd_q q;
-        for(auto i : commands){
+        for (auto i : commands) {
             auto ele = new Proc(i);
             q.push_back(ele);
         }
-        q.inspire();
         q.execute();
-        delete q;   //End of commands
+        delete &q;  // End of commands
     }
     EXIT_SHELL(EXIT_SUCCESS);
 }
@@ -46,11 +53,11 @@ int help()
 
 string print_prompt()
 {
-    char promptSign = '$';
-    /*
-     * TODO: Add user identify to change the sign
-     *       add user can self configurilze the prompt symbol
-     */
+    auto id_fd = popen("id -u", "r");
+    int id;
+    auto trash = fscanf(id_fd, "%d", &id);
+    pclose(id_fd);
+    string promptSign = ((id) ? "$" : "#");
 
     return promptSign + " ";
 }
@@ -82,17 +89,15 @@ string get_user_line()
 }
 
 /* This function might out of date, I'm going to be deleted */
-int do_cmd(string cmd)
+int cmd_hook(string cmd)
 {
     /* Return 0 if execution succeed */
     int exe_result = 0;
     if (cmd == "help")
         exe_result = help();
-    else if (cmd == "exit")
+    else if (cmd == "quit")
         EXIT_SHELL(EXIT_SUCCESS);
-    else {
-        // https://burweisnote.blogspot.com/2017/08/execlpexecvp.html
-    }
+
     return exe_result;
 }
 
