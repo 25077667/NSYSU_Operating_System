@@ -45,8 +45,6 @@ public:
 
     void push_back(Proc *);
     bool empty();
-    /* Make all commands I/O applied */
-    void inspire();
     /* Execute all commands in this queue*/ 
     int execute();
     // We do not need pop

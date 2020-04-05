@@ -210,7 +210,6 @@ bool Cmd_q::empty()
 
 void Cmd_q::push_back(Proc *ele) {}
 
-void Cmd_q::inspire() {}
 
 /**
  * Execute all the commands and return the status code while exist
