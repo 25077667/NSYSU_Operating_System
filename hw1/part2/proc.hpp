@@ -20,13 +20,12 @@ public:
     void setSTDOUT(FILE *);
     void setSTDERR(FILE *);
     void setAllIO(FILE *, FILE *, FILE *);
-    void applyIO(FILE *, FILE *);
-    FILE *doExecute();  // Pass file descriptors to destination
+    int doExecute();
     void commandParser();
     Proc *prev, *next;
 
 private:
-    string command, in_buf, out_buf, err_buf;
+    string command;
     int status;
     FILE *in_fd, *out_fd, *err_fd;
     void raiseError(int);
@@ -45,7 +44,7 @@ public:
 
     void push_back(Proc *);
     bool empty();
-    /* Execute all commands in this queue*/ 
+    /* Execute all commands in this queue*/
     int execute();
     // We do not need pop
     int size;
