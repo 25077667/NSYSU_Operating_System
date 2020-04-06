@@ -13,15 +13,12 @@ static inline void copy2File(FILE *in, FILE *out)
         fputs(tmp, out);
 }
 
-/**
- *  Get the partial final output file descriptor
- *  You can select the orientation, "1" goes prev, "0" goes next
- */
-const static inline FILE *getQDestinationFd(Proc *ele, bool orientation)
+/*remove extra <space> and ';'*/
+static string removeSpace_semicolon(string str)
 {
-    while (ele && ele->pass)
-        ele = ((orientation) ? ele->prev : ele->next);
-    return (ele ? ele->getOutFd() : stdout);
+    str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
+    str.erase(std::remove(str.begin(), str.end(), ';'), str.end());
+    return str;
 }
 
 Proc::Proc(string cmd)
@@ -91,29 +88,29 @@ void Proc::setAllIO(FILE *_in, FILE *_out, FILE *_err)
 int Proc::doExecute()
 {
     int errorCode = 0;
-    /* redirect to file output */
-    if (this->pass)
-        return 0;
-    /* pipe line */
-    char tmp[BUFFER_SIZE] = {0};
-    /* Append perverious command result to the next command*/
-    while ((this->in_fd != stdin) && !feof(this->in_fd) &&
-           fgets(tmp, BUFFER_SIZE, this->in_fd)) {
-        this->command.append(tmp);
-        memset(tmp, 0, BUFFER_SIZE);
-    }
-    auto result_fd = popen(this->command.c_str(), "r");
-    if (result_fd != NULL) {
-        /* Copy result_fd to out_fd*/
-        copy2File(result_fd, this->out_fd);
-        pclose(result_fd);
-
-        if (this->next)
-            this->next->in_fd = this->out_fd;
+    if (this->pass) {
+        /* redirect to file output */
     } else {
-        errorCode = 65537;  // command not found
-    }
+        /* pipe line */
+        char tmp[BUFFER_SIZE] = {0};
+        /* Append perverious command result to the next command*/
+        while ((this->in_fd != stdin) && !feof(this->in_fd) &&
+               fgets(tmp, BUFFER_SIZE, this->in_fd)) {
+            this->command.append(tmp);
+            memset(tmp, 0, BUFFER_SIZE);
+        }
+        auto result_fd = popen(this->command.c_str(), "r");
+        if (result_fd != NULL) {
+            /* Copy result_fd to out_fd*/
+            copy2File(result_fd, this->out_fd);
+            pclose(result_fd);
 
+            if (this->next)
+                this->next->in_fd = this->out_fd;
+        } else {
+            errorCode = 65537;  // command not found
+        }
+    }
 
     raiseError(errorCode);
     return errorCode;
@@ -130,8 +127,8 @@ int Proc::doExecute()
  * From the right to the left speaking
  * rb:
  * "0000 0000 0000 0001" File error
- * 0000 0000 0000 0000 0000 0000 0000 0001: file not exists or permission
- * denied 0000 0000 0000 0001 0000 0000 0000 0001: command not found
+ * 0000 0000 0000 0000 0000 0000 0000 0001: file not exists or permission denied
+ * 0000 0000 0000 0001 0000 0000 0000 0001: command not found
  *
  */
 void Proc::raiseError(int errorCode)
@@ -168,7 +165,7 @@ void Proc::commandParser()
         else {
             auto nextFile = removeSpace_semicolon(this->next->command);
             this->next->out_fd = fopen(nextFile.c_str(), "w");
-            //this->next->pass = true;
+            this->next->pass = true;
         }
         setAllIO(_in_fd, _out_fd, stderr);
     } else if (c == '<') {
@@ -177,7 +174,7 @@ void Proc::commandParser()
         else {
             auto nextFile = removeSpace_semicolon(this->next->command);
             this->next->out_fd = fopen(nextFile.c_str(), "r");
-            //this->next->pass = true;
+            this->next->pass = true;
         }
         setAllIO(this->next->out_fd, stdout, stderr);
     } else if (c == '|')
