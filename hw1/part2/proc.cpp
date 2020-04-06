@@ -23,7 +23,7 @@ static string removeSpace_semicolon(string str)
 
 Proc::Proc(string cmd)
 {
-    this->in_fd = stdin;
+    this->in_fd = nullptr;
     this->out_fd = stdout;
     this->err_fd = stderr;
     this->pass = false;
@@ -53,7 +53,7 @@ Proc::Proc(Proc *_left, Proc *_right, string cmd) : Proc(cmd)
 
 Proc::~Proc()
 {
-    if (this->in_fd != stdin)
+    if (this->in_fd)
         fclose(this->in_fd);
     if (this->out_fd != stdout)
         fclose(this->out_fd);
@@ -94,7 +94,7 @@ int Proc::doExecute()
         /* pipe line */
         char tmp[BUFFER_SIZE] = {0};
         /* Append perverious command result to the next command*/
-        while ((this->in_fd != stdin) && !feof(this->in_fd) &&
+        while ((this->in_fd) && !feof(this->in_fd) &&
                fgets(tmp, BUFFER_SIZE, this->in_fd)) {
             this->command.append(tmp);
             memset(tmp, 0, BUFFER_SIZE);
@@ -155,7 +155,7 @@ void Proc::commandParser()
      */
 
     char c = this->command.back();
-    auto _in_fd = (this->prev) ? this->prev->out_fd : stdin;
+    auto _in_fd = (this->prev) ? this->prev->out_fd : nullptr;
     auto _out_fd = (this->next) ? this->next->in_fd : stdout;
     if (c == ';') {
         setAllIO(_in_fd, stdout, stderr);
@@ -165,9 +165,10 @@ void Proc::commandParser()
         else {
             auto nextFile = removeSpace_semicolon(this->next->command);
             this->next->out_fd = fopen(nextFile.c_str(), "w");
-            this->next->pass = true;
+            this->next->pass = true;  // Remove this will double free detected
+                                      // in tcache 2, but don;t know why
         }
-        setAllIO(_in_fd, _out_fd, stderr);
+        setAllIO(_in_fd, this->next->out_fd, stderr);
     } else if (c == '<') {
         if (this->next == nullptr)
             errorCode = 1;

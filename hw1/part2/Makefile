@@ -12,3 +12,6 @@ all: obj
 
 clean:
 	rm -f myshell *.o
+
+check:
+	valgrind -v --tool=memcheck --leak-check=full --show-leak-kinds=all ./myshell
