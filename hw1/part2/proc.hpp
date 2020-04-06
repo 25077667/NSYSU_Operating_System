@@ -16,13 +16,13 @@ public:
     Proc(Proc *, string);
     Proc(Proc *, Proc *, string);
     ~Proc();
-    void setSTDIN(FILE *);
-    void setSTDOUT(FILE *);
-    void setSTDERR(FILE *);
     void setAllIO(FILE *, FILE *, FILE *);
+    const FILE *getOutFd() const;
+    const FILE *getInFd() const;
     int doExecute();
     void commandParser();
     Proc *prev, *next;
+    bool pass;  // If this command just a file, needn't to execute.
 
 private:
     string command;

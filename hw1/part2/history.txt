@@ -1,1 +1,2 @@
-quit
+cat AAA
+cat history.txt > AAA

@@ -23,7 +23,7 @@ int main()
 {
     cout << "YOU ARE IN MY SHELL!" << endl;
     cout << "Type \'help\' to get helps." << endl;
-    // string singleLine;
+    int errorCode = EXIT_SUCCESS;
     while (true) {
         string singleLine = get_user_line();
 
@@ -37,10 +37,9 @@ int main()
             auto ele = new Proc(i);
             q.push_back(ele);
         }
-        q.execute();
-        // delete &q;  // End of commands
+        errorCode = q.execute();
     }
-    EXIT_SHELL(EXIT_SUCCESS);
+    EXIT_SHELL(errorCode);
 }
 
 int help()
@@ -55,9 +54,9 @@ int help()
 string print_prompt()
 {
     auto id_fd = popen("id -u", "r");
-    int id;
-    auto trash = fscanf(id_fd, "%d", &id);
-    pclose(id_fd);
+    int id = 1;
+    if (fscanf(id_fd, "%d", &id))
+        pclose(id_fd);
     string promptSign = ((id) ? "$" : "#");
 
     return promptSign + " ";
@@ -85,9 +84,8 @@ string get_user_line()
         linenoiseMaskModeDisable();
     } else if (line[0] == '/') {
         printf("Unreconized command: %s\n", line);
-        //}
-        free(line);
     }
+    free(line);
     return singleLine;
 }
 
