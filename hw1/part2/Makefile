@@ -7,7 +7,7 @@ obj:
 	$(CC) $(CFLAGS) -c proc.cpp
 	$(CC) $(CFLAGS) -c do_shell.cpp
 
-all: $(obj)
+all: obj
 	$(CC) -o myshell *.o
 
 clean:

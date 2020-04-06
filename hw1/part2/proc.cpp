@@ -4,7 +4,13 @@
 #include <vector>
 using namespace std;
 #define BUFFER_SIZE 1000 /* Memory page takes 4K for cache*/
-#define CHECK_FILE_EXIST(x) (x)
+
+static inline void copy2File(FILE *in, FILE *out)
+{
+    for (char tmp[BUFFER_SIZE] = {0}; !feof(in) && fgets(tmp, BUFFER_SIZE, in);
+         memset(tmp, 0, BUFFER_SIZE))
+        fputs(tmp, out);
+}
 
 Proc::Proc(string cmd)
 {
@@ -12,8 +18,6 @@ Proc::Proc(string cmd)
     this->out_fd = stdout;
     this->err_fd = stderr;
 
-    if (cmd.back() == ';')
-        cmd.pop_back();
     this->command = cmd;
     this->prev = nullptr;
     this->next = nullptr;
@@ -83,24 +87,20 @@ int Proc::doExecute()
     char tmp[BUFFER_SIZE] = {0};
     /* Append perverious command result to the next command*/
     /* Just like pipe line*/
-    while (CHECK_FILE_EXIST(this->in_fd) && !feof(this->in_fd) &&
+    while ((this->in_fd != stdin) && !feof(this->in_fd) &&
            fgets(tmp, BUFFER_SIZE, this->in_fd)) {
         this->command.append(tmp);
         memset(tmp, 0, BUFFER_SIZE);
     }
     auto result_fd = popen(this->command.c_str(), "r");
 
-    /*Get File size*/
-    fseek(result_fd, 0, SEEK_END);
-    auto size = ftell(result_fd);
-    fseek(result_fd, 0, SEEK_SET);
-
     /* Copy result_fd to out_fd*/
-    memcpy(this->out_fd, result_fd, size);
+    copy2File(result_fd, this->out_fd);
     pclose(result_fd);
 
-    if (this->next)
+    if (this->next) {
         this->next->in_fd = this->out_fd;
+    }
     raiseError(errorCode);
     return errorCode;
 }
@@ -142,29 +142,27 @@ void Proc::commandParser()
      * string identifier;
      */
 
-
     char c = this->command.back();
     auto _in_fd = (this->prev) ? this->prev->out_fd : stdin;
-    auto _out_fd =
-        (this->next) ? this->next->in_fd : stdout;  // Here might always stdout
+    auto _out_fd = (this->next) ? this->next->in_fd : stdout;
     if (c == ';') {
         setAllIO(_in_fd, stdout, stderr);
-
     } else if (c == '>') {
         if (this->next == nullptr)
             errorCode = 1;
-        this->next->out_fd = fopen(this->next->command.c_str(), "w");
+        else
+            this->next->out_fd = fopen(this->next->command.c_str(), "w");
         setAllIO(_in_fd, _out_fd, stderr);
-
     } else if (c == '<') {
         if (this->next == nullptr)
             errorCode = 1;
-        this->next->out_fd = fopen(this->next->command.c_str(), "r");
+        else
+            this->next->out_fd = fopen(this->next->command.c_str(), "r");
         setAllIO(this->next->out_fd, stdout, stderr);
-
-    } else if (c == '|') {
+    } else if (c == '|')
         setAllIO(_in_fd, _out_fd, stderr);
-    }
+    else
+        setAllIO(_in_fd, _out_fd, stderr);
     raiseError(errorCode);
     this->command.back() = ' ';  // replace redirection to ' '
 }

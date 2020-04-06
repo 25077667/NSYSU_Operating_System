@@ -23,6 +23,7 @@ int main()
 {
     cout << "YOU ARE IN MY SHELL!" << endl;
     cout << "Type \'help\' to get helps." << endl;
+    // string singleLine;
     while (true) {
         string singleLine = get_user_line();
 
@@ -37,7 +38,7 @@ int main()
             q.push_back(ele);
         }
         q.execute();
-        delete &q;  // End of commands
+        // delete &q;  // End of commands
     }
     EXIT_SHELL(EXIT_SUCCESS);
 }
@@ -65,24 +66,26 @@ string print_prompt()
 string get_user_line()
 {
     string singleLine;
-    while (true) {
-        auto line = linenoise(print_prompt().c_str());
-        if (line[0] != '\0' && line[0] != '/') {
-            singleLine = string(line);
-            linenoiseHistoryAdd(line);           /* Add to the history. */
-            linenoiseHistorySave("history.txt"); /* Save the history on disk. */
-            break;
-        } else if (!strncmp(line, "/historylen", 11)) {
-            /* The "/historylen" command will change the history len. */
-            int len = atoi(line + 11);
-            linenoiseHistorySetMaxLen(len);
-        } else if (!strncmp(line, "/mask", 5)) {
-            linenoiseMaskModeEnable();
-        } else if (!strncmp(line, "/unmask", 7)) {
-            linenoiseMaskModeDisable();
-        } else if (line[0] == '/') {
-            printf("Unreconized command: %s\n", line);
-        }
+    // while (true) {
+    auto line = linenoise(print_prompt().c_str());
+    if (line == NULL)
+        ;
+    else if (line[0] != '\0' && line[0] != '/') {
+        singleLine = string(line);
+        linenoiseHistoryAdd(line);           /* Add to the history. */
+        linenoiseHistorySave("history.txt"); /* Save the history on disk. */
+        // break;
+    } else if (!strncmp(line, "/historylen", 11)) {
+        /* The "/historylen" command will change the history len. */
+        int len = atoi(line + 11);
+        linenoiseHistorySetMaxLen(len);
+    } else if (!strncmp(line, "/mask", 5)) {
+        linenoiseMaskModeEnable();
+    } else if (!strncmp(line, "/unmask", 7)) {
+        linenoiseMaskModeDisable();
+    } else if (line[0] == '/') {
+        printf("Unreconized command: %s\n", line);
+        //}
         free(line);
     }
     return singleLine;
