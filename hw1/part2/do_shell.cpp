@@ -65,13 +65,13 @@ string print_prompt()
 string get_user_line()
 {
     string singleLine;
-    while (true) {
+    //while (true) {
         auto line = linenoise(print_prompt().c_str());
         if (line[0] != '\0' && line[0] != '/') {
             singleLine = string(line);
             linenoiseHistoryAdd(line);           /* Add to the history. */
             linenoiseHistorySave("history.txt"); /* Save the history on disk. */
-            break;
+            //break;
         } else if (!strncmp(line, "/historylen", 11)) {
             /* The "/historylen" command will change the history len. */
             int len = atoi(line + 11);
@@ -84,7 +84,7 @@ string get_user_line()
             printf("Unreconized command: %s\n", line);
         }
         free(line);
-    }
+    //}
     return singleLine;
 }
 
