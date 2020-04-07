@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-g
-=======
-cat history.txt > AAA
->>>>>>> e3a76d1b5141104e061ae2a9d0b650e2e52a9203
+ls | cat
