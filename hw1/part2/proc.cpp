@@ -56,7 +56,7 @@ Proc::~Proc()
     if (this->in_fd)
         fclose(this->in_fd);
     if (this->out_fd != stdout)
-        fclose(this->out_fd);
+        pclose(this->out_fd);
     if (this->err_fd != stderr)
         fclose(this->err_fd);
 }
@@ -88,28 +88,33 @@ void Proc::setAllIO(FILE *_in, FILE *_out, FILE *_err)
 int Proc::doExecute()
 {
     int errorCode = 0;
-    if (this->pass) {
-        /* redirect to file output */
-    } else {
-        /* pipe line */
-        char tmp[BUFFER_SIZE] = {0};
-        /* Append perverious command result to the next command*/
-        while ((this->in_fd) && !feof(this->in_fd) &&
-               fgets(tmp, BUFFER_SIZE, this->in_fd)) {
-            this->command.append(tmp);
-            memset(tmp, 0, BUFFER_SIZE);
-        }
-        auto result_fd = popen(this->command.c_str(), "r");
-        if (result_fd != NULL) {
-            /* Copy result_fd to out_fd*/
-            copy2File(result_fd, this->out_fd);
-            pclose(result_fd);
+    /*
+     * Redirect to file output that is not a command
+     * Hence this code needn't to execute.
+     */
+    if (this->pass)
+        return 0;
 
-            if (this->next)
-                this->next->in_fd = this->out_fd;
-        } else {
-            errorCode = 65537;  // command not found
-        }
+    /* pipe line */
+    char tmp[BUFFER_SIZE] = {0};
+    /* Append perverious command result to the next command*/
+    while ((this->in_fd) && !feof(this->in_fd) &&
+           fgets(tmp, BUFFER_SIZE, this->in_fd)) {
+        this->command.append(tmp);
+        memset(tmp, 0, BUFFER_SIZE);
+    }
+    auto result_fd = popen(this->command.c_str(), "r");
+    if (result_fd != NULL) {
+        /* Copy result_fd to out_fd*/
+        copy2File(result_fd, this->out_fd);
+        pclose(result_fd);
+
+        if (this->next)
+            this->next->in_fd = this->out_fd;
+    } else {
+        /* if the fork(2) or pipe(2) calls fail,
+         or if the function cannot allocate memory, NULL is returned.*/
+        errorCode = 65537;  // command not found
     }
 
     raiseError(errorCode);
@@ -127,8 +132,8 @@ int Proc::doExecute()
  * From the right to the left speaking
  * rb:
  * "0000 0000 0000 0001" File error
- * 0000 0000 0000 0000 0000 0000 0000 0001: file not exists or permission denied
- * 0000 0000 0000 0001 0000 0000 0000 0001: command not found
+ * 0000 0000 0000 0000 0000 0000 0000 0001: file not exists or permission
+ * denied 0000 0000 0000 0001 0000 0000 0000 0001: command not found
  *
  */
 void Proc::raiseError(int errorCode)
