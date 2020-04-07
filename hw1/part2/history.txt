@@ -1,1 +1,4 @@
-ls | cat
+cat history.txt > AAA
+cat AAA
+quot
+quit

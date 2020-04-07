@@ -10,6 +10,7 @@
 #include "linenoise.h"
 #include "proc.hpp"
 #define EXIT_SHELL(state) exit(state)
+#define EXIT_PASS 4
 using namespace std;
 
 string get_user_line();
@@ -28,16 +29,20 @@ int main()
         string singleLine = get_user_line();
 
         /* Check user diden't quit or something*/
-        if (cmd_hook(singleLine) != EXIT_SUCCESS)
+        errorCode = cmd_hook(singleLine);
+        if (errorCode == EXIT_SUCCESS)
             break;
-
-        auto commands = separate_command(singleLine);
-        Cmd_q q;
-        for (auto i : commands) {
-            auto ele = new Proc(i);
-            q.push_back(ele);
+        else if (errorCode == EXIT_PASS)
+            continue;
+        else if (errorCode == EXIT_FAILURE) {
+            auto commands = separate_command(singleLine);
+            Cmd_q q;
+            for (auto i : commands) {
+                auto ele = new Proc(i);
+                q.push_back(ele);
+            }
+            errorCode = q.execute();
         }
-        errorCode = q.execute();
     }
     EXIT_SHELL(errorCode);
 }
@@ -48,7 +53,7 @@ int help()
     cout << "Not support stderr yet" << endl;
     cout << "Will compelete single process first!" << endl;
     cout << "\'quit\' is the special command to exit(0)" << endl;
-    return 0;
+    return EXIT_PASS;
 }
 
 string print_prompt()
@@ -93,12 +98,15 @@ string get_user_line()
 int cmd_hook(string cmd)
 {
     /* Return 0 if execution succeed */
-    int exe_result = 0;
+    int exe_result = EXIT_FAILURE;
     if (cmd == "help")
         exe_result = help();
     else if (cmd == "quit")
-        EXIT_SHELL(EXIT_SUCCESS);
-
+        exe_result = EXIT_SUCCESS;
+    else if (cmd == "exit") {
+        cout << "Trying to exit?" << endl
+             << "If YES please type \'quit\'" << endl;
+    }
     return exe_result;
 }
 
