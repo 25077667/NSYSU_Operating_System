@@ -1,19 +1,33 @@
 #include "proc.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <vector>
 using namespace std;
 #define BUFFER_SIZE 1000 /* Memory page takes 4K for cache*/
-#define CHECK_FILE_EXIST(x) (x)
+
+static inline void copy2File(FILE *in, FILE *out)
+{
+    for (char tmp[BUFFER_SIZE] = {0}; !feof(in) && fgets(tmp, BUFFER_SIZE, in);
+         memset(tmp, 0, BUFFER_SIZE))
+        fputs(tmp, out);
+}
+
+/*remove extra <space> and ';'*/
+static string removeSpace_semicolon(string str)
+{
+    str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
+    str.erase(std::remove(str.begin(), str.end(), ';'), str.end());
+    return str;
+}
 
 Proc::Proc(string cmd)
 {
-    this->in_fd = stdin;
+    this->in_fd = nullptr;
     this->out_fd = stdout;
     this->err_fd = stderr;
+    this->pass = false;
 
-    if (cmd.back() == ';')
-        cmd.pop_back();
     this->command = cmd;
     this->prev = nullptr;
     this->next = nullptr;
@@ -39,7 +53,7 @@ Proc::Proc(Proc *_left, Proc *_right, string cmd) : Proc(cmd)
 
 Proc::~Proc()
 {
-    if (this->in_fd != stdin)
+    if (this->in_fd)
         fclose(this->in_fd);
     if (this->out_fd != stdout)
         fclose(this->out_fd);
@@ -47,19 +61,13 @@ Proc::~Proc()
         fclose(this->err_fd);
 }
 
-void Proc::setSTDIN(FILE *set)
+const inline FILE *Proc::getOutFd() const
 {
-    this->in_fd = set;
+    return this->out_fd;
 }
-
-void Proc::setSTDOUT(FILE *set)
+const inline FILE *Proc::getInFd() const
 {
-    this->out_fd = set;
-}
-
-void Proc::setSTDERR(FILE *set)
-{
-    this->err_fd = set;
+    return this->in_fd;
 }
 
 void Proc::setAllIO(FILE *_in, FILE *_out, FILE *_err)
@@ -80,27 +88,30 @@ void Proc::setAllIO(FILE *_in, FILE *_out, FILE *_err)
 int Proc::doExecute()
 {
     int errorCode = 0;
-    char tmp[BUFFER_SIZE] = {0};
-    /* Append perverious command result to the next command*/
-    /* Just like pipe line*/
-    while (CHECK_FILE_EXIST(this->in_fd) && !feof(this->in_fd) &&
-           fgets(tmp, BUFFER_SIZE, this->in_fd)) {
-        this->command.append(tmp);
-        memset(tmp, 0, BUFFER_SIZE);
+    if (this->pass) {
+        /* redirect to file output */
+    } else {
+        /* pipe line */
+        char tmp[BUFFER_SIZE] = {0};
+        /* Append perverious command result to the next command*/
+        while ((this->in_fd) && !feof(this->in_fd) &&
+               fgets(tmp, BUFFER_SIZE, this->in_fd)) {
+            this->command.append(tmp);
+            memset(tmp, 0, BUFFER_SIZE);
+        }
+        auto result_fd = popen(this->command.c_str(), "r");
+        if (result_fd != NULL) {
+            /* Copy result_fd to out_fd*/
+            copy2File(result_fd, this->out_fd);
+            pclose(result_fd);
+
+            if (this->next)
+                this->next->in_fd = this->out_fd;
+        } else {
+            errorCode = 65537;  // command not found
+        }
     }
-    auto result_fd = popen(this->command.c_str(), "r");
 
-    /*Get File size*/
-    fseek(result_fd, 0, SEEK_END);
-    auto size = ftell(result_fd);
-    fseek(result_fd, 0, SEEK_SET);
-
-    /* Copy result_fd to out_fd*/
-    memcpy(this->out_fd, result_fd, size);
-    pclose(result_fd);
-
-    if (this->next)
-        this->next->in_fd = this->out_fd;
     raiseError(errorCode);
     return errorCode;
 }
@@ -126,7 +137,8 @@ void Proc::raiseError(int errorCode)
     case 1:
         perror("File is not exist or permission denied\n");
         break;
-
+    case 65537:
+        perror("command not found");
     default:
         break;
     }
@@ -142,29 +154,34 @@ void Proc::commandParser()
      * string identifier;
      */
 
-
     char c = this->command.back();
-    auto _in_fd = (this->prev) ? this->prev->out_fd : stdin;
-    auto _out_fd =
-        (this->next) ? this->next->in_fd : stdout;  // Here might always stdout
+    auto _in_fd = (this->prev) ? this->prev->out_fd : nullptr;
+    auto _out_fd = (this->next) ? this->next->in_fd : stdout;
     if (c == ';') {
         setAllIO(_in_fd, stdout, stderr);
-
     } else if (c == '>') {
         if (this->next == nullptr)
             errorCode = 1;
-        this->next->out_fd = fopen(this->next->command.c_str(), "w");
-        setAllIO(_in_fd, _out_fd, stderr);
-
+        else {
+            auto nextFile = removeSpace_semicolon(this->next->command);
+            this->next->out_fd = fopen(nextFile.c_str(), "w");
+            this->next->pass = true;  // Remove this will double free detected
+                                      // in tcache 2, but don;t know why
+        }
+        setAllIO(_in_fd, this->next->out_fd, stderr);
     } else if (c == '<') {
         if (this->next == nullptr)
             errorCode = 1;
-        this->next->out_fd = fopen(this->next->command.c_str(), "r");
+        else {
+            auto nextFile = removeSpace_semicolon(this->next->command);
+            this->next->out_fd = fopen(nextFile.c_str(), "r");
+            this->next->pass = true;
+        }
         setAllIO(this->next->out_fd, stdout, stderr);
-
-    } else if (c == '|') {
+    } else if (c == '|')
         setAllIO(_in_fd, _out_fd, stderr);
-    }
+    else
+        setAllIO(_in_fd, _out_fd, stderr);
     raiseError(errorCode);
     this->command.back() = ' ';  // replace redirection to ' '
 }
@@ -204,7 +221,7 @@ void Cmd_q::push_back(Proc *ele)
         this->tail = ele;
     }
 
-    ele->commandParser();
+    // ele->commandParser();
     this->size++;
 }
 
@@ -214,6 +231,8 @@ void Cmd_q::push_back(Proc *ele)
  */
 int Cmd_q::execute()
 {
+    for (auto curr = this->head; curr; curr = curr->next)
+        curr->commandParser();
     auto errorCode = 0;
     for (auto curr = this->head; curr; curr = curr->next) {
         errorCode = curr->doExecute();

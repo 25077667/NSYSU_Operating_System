@@ -23,6 +23,7 @@ int main()
 {
     cout << "YOU ARE IN MY SHELL!" << endl;
     cout << "Type \'help\' to get helps." << endl;
+    int errorCode = EXIT_SUCCESS;
     while (true) {
         string singleLine = get_user_line();
 
@@ -36,10 +37,9 @@ int main()
             auto ele = new Proc(i);
             q.push_back(ele);
         }
-        q.execute();
-        delete &q;  // End of commands
+        errorCode = q.execute();
     }
-    EXIT_SHELL(EXIT_SUCCESS);
+    EXIT_SHELL(errorCode);
 }
 
 int help()
@@ -54,9 +54,9 @@ int help()
 string print_prompt()
 {
     auto id_fd = popen("id -u", "r");
-    int id;
-    auto trash = fscanf(id_fd, "%d", &id);
-    pclose(id_fd);
+    int id = 1;
+    if (fscanf(id_fd, "%d", &id))
+        pclose(id_fd);
     string promptSign = ((id) ? "$" : "#");
 
     return promptSign + " ";
@@ -65,26 +65,27 @@ string print_prompt()
 string get_user_line()
 {
     string singleLine;
-    //while (true) {
-        auto line = linenoise(print_prompt().c_str());
-        if (line[0] != '\0' && line[0] != '/') {
-            singleLine = string(line);
-            linenoiseHistoryAdd(line);           /* Add to the history. */
-            linenoiseHistorySave("history.txt"); /* Save the history on disk. */
-            //break;
-        } else if (!strncmp(line, "/historylen", 11)) {
-            /* The "/historylen" command will change the history len. */
-            int len = atoi(line + 11);
-            linenoiseHistorySetMaxLen(len);
-        } else if (!strncmp(line, "/mask", 5)) {
-            linenoiseMaskModeEnable();
-        } else if (!strncmp(line, "/unmask", 7)) {
-            linenoiseMaskModeDisable();
-        } else if (line[0] == '/') {
-            printf("Unreconized command: %s\n", line);
-        }
-        free(line);
-    //}
+    // while (true) {
+    auto line = linenoise(print_prompt().c_str());
+    if (line == NULL)
+        ;
+    else if (line[0] != '\0' && line[0] != '/') {
+        singleLine = string(line);
+        linenoiseHistoryAdd(line);           /* Add to the history. */
+        linenoiseHistorySave("history.txt"); /* Save the history on disk. */
+        // break;
+    } else if (!strncmp(line, "/historylen", 11)) {
+        /* The "/historylen" command will change the history len. */
+        int len = atoi(line + 11);
+        linenoiseHistorySetMaxLen(len);
+    } else if (!strncmp(line, "/mask", 5)) {
+        linenoiseMaskModeEnable();
+    } else if (!strncmp(line, "/unmask", 7)) {
+        linenoiseMaskModeDisable();
+    } else if (line[0] == '/') {
+        printf("Unreconized command: %s\n", line);
+    }
+    free(line);
     return singleLine;
 }
 

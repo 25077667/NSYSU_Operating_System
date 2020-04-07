@@ -7,8 +7,11 @@ obj:
 	$(CC) $(CFLAGS) -c proc.cpp
 	$(CC) $(CFLAGS) -c do_shell.cpp
 
-all: $(obj)
+all: obj
 	$(CC) -o myshell *.o
 
 clean:
 	rm -f myshell *.o
+
+check:
+	valgrind -v --tool=memcheck --leak-check=full --show-leak-kinds=all ./myshell
