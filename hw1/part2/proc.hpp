@@ -2,6 +2,7 @@
 #define PROC_H
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
 /**
@@ -16,7 +17,7 @@ public:
     ~Proc();
     void setAllIO(FILE *, FILE *, FILE *);
     void setSIO(string, string, string);
-    int doExecute();
+    int doExecute(vector<FILE *> &);
     void commandParser();
     Proc *prev, *next;
     bool pass;  // If this command just a file, needn't to execute.
@@ -42,7 +43,7 @@ public:
     void push_back(Proc *);
     bool empty();
     /* Execute all commands in this queue*/
-    int execute();
+    int execute(vector<FILE *> &);
     // We do not need pop
     int size;
     Proc *head, *tail;

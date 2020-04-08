@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <cstring>
 #include <vector>
+
+#include "popen.h"
+
 using namespace std;
 #define BUFFER_SIZE 1000 /* Memory page takes 4K for cache*/
 
@@ -73,7 +76,7 @@ void Proc::setSIO(string _in, string _out, string _err)
  *
  * @return: the output file descriptor(read only)
  */
-int Proc::doExecute()
+int Proc::doExecute(vector<FILE *> &bgPool)
 {
     int errorCode = 0;
     /*
@@ -82,21 +85,23 @@ int Proc::doExecute()
      */
 
     if (!this->pass) {
-        // this->command += ("\'" + this->in_s + "\'");
         this->command += this->in_s;
         // Well, ls might input a '\n' at the begin of the line
         replace(this->command.begin(), this->command.end(), '\n', ' ');
 
-        cout << ">>>>>>>>>>>>>>>>>>>" << endl
-             << this->command << endl
-             << "<<<<<<<<<<<<<<<<<<<" << endl;
-
-        auto result_fd = popen(this->command.c_str(), "r");
+        this->command.pop_back();  // there is a ' ' in the end
+        pid_t get_pid = 0;
+        auto result_fd = mypopen(this->command.c_str(), "r", &get_pid);
         if (result_fd == NULL) {
             errorCode = 65537;  // command not cfound
         } else {
-            this->out_s = file2String(result_fd);
-            pclose(result_fd);
+            if (this->command.back() == '&') {
+                cout << '[' << get_pid << ']' << endl;
+                bgPool.push_back(result_fd);
+            } else {
+                this->out_s = file2String(result_fd);
+                mypclose(result_fd);
+            }
 
             // pass this output to next input
             if (this->next)
@@ -205,7 +210,7 @@ void Proc::commandParser()
     }
 
     raiseError(errorCode);
-    this->command.back() = ' ';  // replace redirection to ' '
+    this->command.back() = ' ';
 }
 
 /////////////////////Cmd_q zone///////////////////////
@@ -251,13 +256,13 @@ void Cmd_q::push_back(Proc *ele)
 /**
  * Execute all the commands and return the status code while exist
  */
-int Cmd_q::execute()
+int Cmd_q::execute(vector<FILE *> &bgPool)
 {
     for (auto curr = this->head; curr; curr = curr->next)
         curr->commandParser();
     auto errorCode = 0;
     for (auto curr = this->head; curr; curr = curr->next) {
-        errorCode = curr->doExecute();
+        errorCode = curr->doExecute(bgPool);
     }
     return errorCode;
 }

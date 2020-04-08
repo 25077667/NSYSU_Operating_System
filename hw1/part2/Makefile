@@ -11,7 +11,7 @@ all: obj
 	$(CC) -o myshell *.o
 
 clean:
-	rm -f myshell *.o
+	rm -f myshell *.o *.gch
 
 check:
 	valgrind -v --tool=memcheck --leak-check=full --show-leak-kinds=all ./myshell
