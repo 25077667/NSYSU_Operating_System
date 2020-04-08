@@ -1,4 +1,7 @@
+echo AAABBB
+echo ASDFASFASF
+cat history.txt
 cat history.txt > AAA
 cat AAA
-quot
+AAA < echo BBB
 quit

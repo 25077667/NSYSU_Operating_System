@@ -13,21 +13,18 @@ class Proc
 {
 public:
     Proc(string);
-    Proc(Proc *, string);
-    Proc(Proc *, Proc *, string);
     ~Proc();
     void setAllIO(FILE *, FILE *, FILE *);
-    const FILE *getOutFd() const;
-    const FILE *getInFd() const;
+    void setSIO(string, string, string);
     int doExecute();
     void commandParser();
     Proc *prev, *next;
     bool pass;  // If this command just a file, needn't to execute.
 
 private:
-    string command;
+    string command, in_s, out_s, err_s;
     int status;
-    FILE *in_fd, *out_fd, *err_fd;
+    FILE *out_fd, *err_fd;
     void raiseError(int);
 };
 

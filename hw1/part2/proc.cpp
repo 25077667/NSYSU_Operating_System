@@ -21,9 +21,26 @@ static string removeSpace_semicolon(string str)
     return str;
 }
 
+static inline void string2out(string s, FILE *out)
+{
+    if (out && out != stdin) {
+        fputs(s.c_str(), out);
+    }
+}
+
+static inline string file2String(FILE *f)
+{
+    string s;
+    char tmp[BUFFER_SIZE] = {0};
+    while (f && !feof(f) && fread(tmp, sizeof(char), BUFFER_SIZE, f)) {
+        s.append(tmp);
+        memset(tmp, 0, BUFFER_SIZE);
+    }
+    return s;
+}
+
 Proc::Proc(string cmd)
 {
-    this->in_fd = (FILE*) malloc();
     this->out_fd = stdout;
     this->err_fd = stderr;
     this->pass = false;
@@ -33,48 +50,19 @@ Proc::Proc(string cmd)
     this->next = nullptr;
 }
 
-Proc::Proc(Proc *_left, string cmd) : Proc(cmd)
-{
-    this->prev = _left;
-    this->next = nullptr;
-    if (_left)
-        _left->next = this;
-}
-
-Proc::Proc(Proc *_left, Proc *_right, string cmd) : Proc(cmd)
-{
-    this->prev = _left;
-    this->next = _right;
-    if (_left)
-        _left->next = this;
-    if (_right)
-        _right->prev = this;
-}
-
 Proc::~Proc()
 {
-    if (this->in_fd)
-        fclose(this->in_fd);
     if (this->out_fd != stdout)
         pclose(this->out_fd);
     if (this->err_fd != stderr)
         fclose(this->err_fd);
 }
 
-const inline FILE *Proc::getOutFd() const
+void Proc::setSIO(string _in, string _out, string _err)
 {
-    return this->out_fd;
-}
-const inline FILE *Proc::getInFd() const
-{
-    return this->in_fd;
-}
-
-void Proc::setAllIO(FILE *_in, FILE *_out, FILE *_err)
-{
-    this->in_fd = _in;
-    this->out_fd = _out;
-    this->err_fd = _err;
+    this->in_s = _in;
+    this->out_s = _out;
+    this->err_s = _err;
 }
 
 /**
@@ -92,31 +80,33 @@ int Proc::doExecute()
      * Redirect to file output that is not a command
      * Hence this code needn't to execute.
      */
-    if (this->pass)
-        return 0;
 
-    /* pipe line */
-    char tmp[BUFFER_SIZE] = {0};
-    /* Append perverious command result to the next command*/
-    while ((this->in_fd) && !feof(this->in_fd) &&
-           fgets(tmp, BUFFER_SIZE, this->in_fd)) {
-        this->command.append(tmp);
-        memset(tmp, 0, BUFFER_SIZE);
-    }
-    auto result_fd = popen(this->command.c_str(), "r");
-    if (result_fd != NULL) {
-        /* Copy result_fd to out_fd*/
-        copy2File(result_fd, this->out_fd);
-        pclose(result_fd);
+    if (!this->pass) {
+        this->command += this->in_s;
+        auto result_fd = popen(this->command.c_str(), "r");
+        if (result_fd == NULL) {
+            errorCode = 65537;  // command not cfound
+        } else {
+            this->out_s = file2String(result_fd);
+            pclose(result_fd);
 
-        if (this->next)
-            this->next->in_fd = this->out_fd;
+            // pass this output to next input
+            if (this->next)
+                this->next->in_s = this->out_s;
+            else if (this->out_fd)
+                fputs(this->out_s.c_str(), this->out_fd);
+            else
+                errorCode = 2;
+        }
     } else {
-        /* if the fork(2) or pipe(2) calls fail,
-         or if the function cannot allocate memory, NULL is returned.*/
-        errorCode = 65537;  // command not found
+        if (this->next)
+            this->next->in_s = this->out_s;
+        // other conditions are "redirection and in the end of command"
+        if (this->out_fd != stdout && this->out_fd) {
+            fputs(this->in_s.c_str(), this->out_fd);
+            fclose(this->out_fd);
+        }
     }
-
     raiseError(errorCode);
     return errorCode;
 }
@@ -133,8 +123,13 @@ int Proc::doExecute()
  * rb:
  * "0000 0000 0000 0001" File error
  * 0000 0000 0000 0000 0000 0000 0000 0001: file not exists or permission
- * denied 0000 0000 0000 0001 0000 0000 0000 0001: command not found
+ * denied
+ * 0000 0000 0000 0001 0000 0000 0000 0001: command not found
+ * 0000 0000 0000 0010 0000 0000 0000 0001: ambiguous command
  *
+ * rb:
+ * "0000 0000 0000 0010" unknown error
+ *  0000 0000 0000 0000 0000 0000 0000 0010: unknown error
  */
 void Proc::raiseError(int errorCode)
 {
@@ -143,7 +138,13 @@ void Proc::raiseError(int errorCode)
         perror("File is not exist or permission denied\n");
         break;
     case 65537:
-        perror("command not found");
+        perror("Command not found");
+        break;
+    case 131073:
+        perror("Ambiguous command");
+        break;
+    case 2:
+        perror("unknown error");
     default:
         break;
     }
@@ -158,35 +159,43 @@ void Proc::commandParser()
      * TODO: support stderr redirection, multi-redirection, append
      * string identifier;
      */
-
     char c = this->command.back();
-    auto _in_fd = (this->prev) ? this->prev->out_fd : nullptr;
-    auto _out_fd = (this->next) ? this->next->in_fd : stdout;
-    if (c == ';') {
-        setAllIO(_in_fd, stdout, stderr);
-    } else if (c == '>') {
-        if (this->next == nullptr)
+    auto _in_s = (this->prev) ? this->prev->out_s : string();
+    auto _out_s = (this->next) ? this->next->in_s : string();
+    auto _err_s = this->err_s;
+    setSIO(_in_s, _out_s, err_s);
+    if (c == ';')
+        ;
+    else if (c == '>') {
+        // Next command is a file
+        if (!this->next) {  // File not exist
             errorCode = 1;
-        else {
-            auto nextFile = removeSpace_semicolon(this->next->command);
-            this->next->out_fd = fopen(nextFile.c_str(), "w");
-            this->next->pass = true;  // Remove this will double free detected
-                                      // in tcache 2, but don;t know why
-        }
-        setAllIO(_in_fd, this->next->out_fd, stderr);
-    } else if (c == '<') {
-        if (this->next == nullptr)
-            errorCode = 1;
-        else {
-            auto nextFile = removeSpace_semicolon(this->next->command);
-            this->next->out_fd = fopen(nextFile.c_str(), "r");
+        } else {
+            auto fileName = removeSpace_semicolon(this->next->command);
+            this->next->out_fd = fopen(fileName.c_str(), "w");
             this->next->pass = true;
         }
-        setAllIO(this->next->out_fd, stdout, stderr);
-    } else if (c == '|')
-        setAllIO(_in_fd, _out_fd, stderr);
-    else
-        setAllIO(_in_fd, _out_fd, stderr);
+    } else if (c == '<') {
+        if (!this->next)
+            errorCode = 1;
+        else {
+            auto fileName = removeSpace_semicolon(this->next->command);
+            auto _in_df = fopen(fileName.c_str(), "r");
+            if (_in_df == NULL)
+                errorCode = 1;
+            else {
+                this->in_s = file2String(_in_df);
+                fclose(_in_df);
+            }
+            this->next->pass = true;
+        }
+    } else if (c == '|') {
+        if (!this->next)
+            errorCode = 65537;
+    } else {
+        errorCode = 131073;
+    }
+
     raiseError(errorCode);
     this->command.back() = ' ';  // replace redirection to ' '
 }
