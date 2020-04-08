@@ -118,6 +118,7 @@ int Proc::doExecute(vector<FILE *> &bgPool)
         if (this->out_fd != stdout && this->out_fd) {
             fputs(this->in_s.c_str(), this->out_fd);
             fclose(this->out_fd);
+            this->out_fd = stdout;
         }
     }
     raiseError(errorCode);

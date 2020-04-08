@@ -1,2 +1,2 @@
-sleep 2&
+echo BOO > A
 quit
