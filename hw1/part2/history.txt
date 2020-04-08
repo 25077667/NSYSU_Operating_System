@@ -1,7 +1,2 @@
-echo AAABBB
-echo ASDFASFASF
-cat history.txt
-cat history.txt > AAA
-cat AAA
-AAA < echo BBB
+ls | cat
 quit

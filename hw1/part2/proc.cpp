@@ -82,7 +82,15 @@ int Proc::doExecute()
      */
 
     if (!this->pass) {
+        // this->command += ("\'" + this->in_s + "\'");
         this->command += this->in_s;
+        // Well, ls might input a '\n' at the begin of the line
+        replace(this->command.begin(), this->command.end(), '\n', ' ');
+
+        cout << ">>>>>>>>>>>>>>>>>>>" << endl
+             << this->command << endl
+             << "<<<<<<<<<<<<<<<<<<<" << endl;
+
         auto result_fd = popen(this->command.c_str(), "r");
         if (result_fd == NULL) {
             errorCode = 65537;  // command not cfound
