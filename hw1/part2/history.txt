@@ -1,2 +1,2 @@
-echo "AAA" > AAA
+sleep 2&
 quit

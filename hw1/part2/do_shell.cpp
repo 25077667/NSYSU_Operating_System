@@ -9,22 +9,27 @@
 
 #include "linenoise.h"
 #include "proc.hpp"
+
 #define EXIT_SHELL(state) exit(state)
 #define EXIT_PASS 4
 using namespace std;
 
-string get_user_line();
-int cmd_hook(string cmd);
-vector<string> separate_command(string commands);
-string print_prompt();
-int help();
-bool bothAreSpaces(char lhs, char rhs);
+extern void mypclose(FILE *);
+
+static string get_user_line();
+static int cmd_hook(string cmd);
+static vector<string> separate_command(string commands);
+static string print_prompt();
+static int help();
+static bool bothAreSpaces(char lhs, char rhs);
+static void clean_bgPool(vector<FILE *> &);
 
 int main()
 {
     cout << "YOU ARE IN MY SHELL!" << endl;
     cout << "Type \'help\' to get helps." << endl;
     int errorCode = EXIT_SUCCESS;
+    vector<FILE *> bgPool;
     while (true) {
         string singleLine = get_user_line();
 
@@ -41,13 +46,14 @@ int main()
                 auto ele = new Proc(i);
                 q.push_back(ele);
             }
-            errorCode = q.execute();
+            errorCode = q.execute(bgPool);
         }
     }
+    clean_bgPool(bgPool);
     EXIT_SHELL(errorCode);
 }
 
-int help()
+static int help()
 {
     cout << "This is HELP" << endl;
     cout << "Not support stderr yet" << endl;
@@ -56,7 +62,7 @@ int help()
     return EXIT_PASS;
 }
 
-string print_prompt()
+static string print_prompt()
 {
     auto id_fd = popen("id -u", "r");
     int id = 1;
@@ -67,7 +73,7 @@ string print_prompt()
     return promptSign + " ";
 }
 
-string get_user_line()
+static string get_user_line()
 {
     string singleLine;
     // while (true) {
@@ -95,7 +101,7 @@ string get_user_line()
 }
 
 /* This function might out of date, I'm going to be deleted */
-int cmd_hook(string cmd)
+static int cmd_hook(string cmd)
 {
     /* Return 0 if execution succeed */
     int exe_result = EXIT_FAILURE;
@@ -110,7 +116,7 @@ int cmd_hook(string cmd)
     return exe_result;
 }
 
-vector<string> separate_command(string commands)
+static vector<string> separate_command(string commands)
 {
     /* Remove duplicate <space> */
     commands += ";";
@@ -157,7 +163,13 @@ vector<string> separate_command(string commands)
     return command_set;
 }
 
-inline bool bothAreSpaces(char lhs, char rhs)
+static inline bool bothAreSpaces(char lhs, char rhs)
 {
     return (lhs == rhs) && (lhs == ' ');
+}
+
+static void clean_bgPool(vector<FILE *> &v)
+{
+    for (auto i : v)
+        mypclose(i);
 }
