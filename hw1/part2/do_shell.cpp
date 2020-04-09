@@ -191,6 +191,8 @@ static int cmd_hook(string cmd)
             ps.pwd = (action == "on");
         else if (attribute == "prompt")
             ps.prompt = (action == "on");
+        else if (attribute == "rainbow")
+            ps.rainbow = (action == "on");
         else
             cerr << "Wrong format for setting PS!!" << endl;
 
