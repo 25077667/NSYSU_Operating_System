@@ -31,7 +31,7 @@ struct PS {
     bool hostname = 1;
     bool pwd = 0;
     bool prompt = 1;
-    bool rainbow = 0;
+    bool rainbow = 1;
 } ps;
 
 
