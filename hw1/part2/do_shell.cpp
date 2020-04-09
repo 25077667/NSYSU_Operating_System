@@ -26,6 +26,13 @@ static string print_prompt();
 static int help();
 static bool bothAreSpaces(char lhs, char rhs);
 static void clean_bgPool(vector<FILE *> &);
+struct PS {
+    bool name = 1;
+    bool hostname = 1;
+    bool pwd = 0;
+    bool prompt = 1;
+} ps;
+
 
 int main()
 {
@@ -61,43 +68,63 @@ static int help()
     cout << "This is HELP" << endl
          << "Not support stderr yet" << endl
          << "Will compelete single process first!" << endl
-         << "\'quit\' is the special command to exit(0)" << endl;
+         << "\'quit\' is the special command to exit(0)" << endl
+         << endl
+         << "SET promt:" << endl
+         << "You can say some thing turn on and off!" << endl
+         << "Yes, only on and off" << endl
+         << endl
+         << "For example:" << endl
+         << "\"PS=pwd:off\"" << endl
+         << "\"PS=name:on\"" << endl
+         << "The supporting attributes are: pwd, name, hostname, prompt"
+         << endl;
     return EXIT_PASS;
 }
 
 static string print_prompt()
 {
     char buffer[BUFFER_SIZE] = {0};
+    string promptSign, pwd, userName, hostName;
+    FILE *tmp_fd;
 
     /* Get id */
-    auto tmp_fd = popen("id -u", "r");
-    int id = 1;
-    if (fscanf(tmp_fd, "%d", &id))
-        pclose(tmp_fd);
-    string promptSign = ((id) ? "$ " : "# ");
+    if (ps.prompt) {
+        tmp_fd = popen("id -u", "r");
+        int id = 1;
+        if (fscanf(tmp_fd, "%d", &id))
+            pclose(tmp_fd);
+        promptSign = ((id) ? "$ " : "# ");
+    }
 
     /* Get pwd */
-    tmp_fd = popen("pwd -P", "r");
-    if (fscanf(tmp_fd, "%s", buffer))
-        pclose(tmp_fd);
-    string pwd(buffer, strlen(buffer));
-    memset(buffer, 0, BUFFER_SIZE);
+    if (ps.pwd) {
+        tmp_fd = popen("pwd -P", "r");
+        if (fscanf(tmp_fd, "%s", buffer))
+            pclose(tmp_fd);
+        pwd = ":" + string(buffer, strlen(buffer));
+        memset(buffer, 0, BUFFER_SIZE);
+    }
 
     /* Get user name*/
-    tmp_fd = popen("whoami", "r");
-    if (fscanf(tmp_fd, "%s", buffer))
-        pclose(tmp_fd);
-    string userName(buffer, strlen(buffer));
-    memset(buffer, 0, BUFFER_SIZE);
+    if (ps.name) {
+        tmp_fd = popen("whoami", "r");
+        if (fscanf(tmp_fd, "%s", buffer))
+            pclose(tmp_fd);
+        userName = string(buffer, strlen(buffer));
+        memset(buffer, 0, BUFFER_SIZE);
+    }
 
     /* Get host name */
-    tmp_fd = popen("cat /proc/sys/kernel/hostname", "r");
-    if (fscanf(tmp_fd, "%s", buffer))
-        pclose(tmp_fd);
-    string hostName(buffer, strlen(buffer));
-    memset(buffer, 0, BUFFER_SIZE);
+    if (ps.hostname) {
+        tmp_fd = popen("cat /proc/sys/kernel/hostname", "r");
+        if (fscanf(tmp_fd, "%s", buffer))
+            pclose(tmp_fd);
+        hostName = "@" + string(buffer, strlen(buffer));
+        memset(buffer, 0, BUFFER_SIZE);
+    }
 
-    return userName + "@" + hostName + ":" + pwd + promptSign;
+    return userName + hostName + pwd + promptSign;
 }
 
 static string get_user_line()
@@ -134,8 +161,10 @@ static int cmd_hook(string cmd)
     int exe_result = EXIT_FAILURE;
     if (cmd == "help")
         exe_result = help();
+
     else if (cmd == "quit")
         exe_result = EXIT_SUCCESS;
+
     else if (cmd.substr(0, cmd.find(" ")) == "cd") {
         cmd.erase(0, cmd.find(" ") + 1);
         /* chdir: 0 is success, -1 is failed */
@@ -143,6 +172,25 @@ static int cmd_hook(string cmd)
             cerr << "myshell: cd: " << cmd << ": No such file or directory"
                  << endl;
         }
+    }
+
+    else if (cmd.substr(0, cmd.find("=")) == "PS") {
+        cmd.erase(0, cmd.find("=") + 1);
+        auto attribute = cmd.substr(0, cmd.find(":"));
+        cmd.erase(0, cmd.find(":") + 1);
+        auto action = cmd;
+
+        if (attribute == "name")
+            ps.name = (action == "on");
+        else if (attribute == "hostname")
+            ps.hostname = (action == "on");
+        else if (attribute == "pwd")
+            ps.pwd = (action == "on");
+        else if (attribute == "prompt")
+            ps.prompt = (action == "on");
+        else
+            cerr << "Wrong format for setting PS!!" << endl;
+
     } else if (cmd == "exit") {
         cout << "Trying to exit?" << endl
              << "If YES, please type \'quit\'" << endl;
