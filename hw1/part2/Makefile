@@ -1,11 +1,12 @@
 CC = g++
-CFLAGS = -Wall -W -Os -g -std=c++14
+CFLAGS = -Wall -W -Os -g
+CPPFLAGS = -Wall -W -Os -g -std=c++14
 OUT = myshell
 
 obj: 
 	gcc $(CFLAGS) -c linenoise.c
-	$(CC) $(CFLAGS) -c proc.cpp
-	$(CC) $(CFLAGS) -c do_shell.cpp
+	$(CC) $(CPPFLAGS) -c proc.cpp
+	$(CC) $(CPPFLAGS) -c do_shell.cpp
 
 all: obj
 	$(CC) -o $(OUT) *.o
