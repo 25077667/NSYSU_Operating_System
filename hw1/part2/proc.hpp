@@ -41,11 +41,9 @@ public:
     ~Cmd_q();
 
     void push_back(Proc *);
-    bool empty();
     /* Execute all commands in this queue*/
     int execute(vector<FILE *> &);
     // We do not need pop
-    int size;
     Proc *head, *tail;
 };
 

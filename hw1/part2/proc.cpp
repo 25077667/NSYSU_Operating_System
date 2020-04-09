@@ -217,7 +217,6 @@ void Proc::commandParser()
 
 Cmd_q::Cmd_q()
 {
-    this->size = 0;
     this->head = this->tail = nullptr;
 }
 
@@ -229,27 +228,17 @@ Cmd_q::~Cmd_q()
         delete curr;  // Will invoke the distructor automatically
         curr = nextOne;
     }
-    this->size = 0;
-}
-
-bool Cmd_q::empty()
-{
-    return (bool) this->size;
 }
 
 void Cmd_q::push_back(Proc *ele)
 {
     if (this->head == nullptr) {
         this->head = ele;
-        this->tail = ele;
     } else {
         ele->prev = this->tail;
         this->tail->next = ele;
-        this->tail = ele;
     }
-
-    // ele->commandParser();
-    this->size++;
+    this->tail = ele;
 }
 
 
