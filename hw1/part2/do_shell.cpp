@@ -71,13 +71,13 @@ static int help()
          << "\'quit\' is the special command to exit(0)" << endl
          << endl
          << "SET promt:" << endl
-         << "You can say some thing turn on and off!" << endl
-         << "Yes, only on and off" << endl
+         << "\tYou can say some thing turn on and off!" << endl
+         << "\tYes, only on and off" << endl
          << endl
-         << "For example:" << endl
-         << "\"PS=pwd:off\"" << endl
-         << "\"PS=name:on\"" << endl
-         << "The supporting attributes are: pwd, name, hostname, prompt"
+         << "\tFor example:" << endl
+         << "\t\tPS=pwd:off" << endl
+         << "\t\tPS=name:on" << endl
+         << "\tThe supporting attributes are: pwd, name, hostname, prompt"
          << endl;
     return EXIT_PASS;
 }
@@ -162,7 +162,7 @@ static int cmd_hook(string cmd)
     if (cmd == "help")
         exe_result = help();
 
-    else if (cmd == "quit")
+    else if (cmd == "quit" || cmd == "q")
         exe_result = EXIT_SUCCESS;
 
     else if (cmd.substr(0, cmd.find(" ")) == "cd") {
