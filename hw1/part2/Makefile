@@ -13,7 +13,7 @@ all: obj
 	$(CC) -o $(OUT) *.o
 
 clean:
-	rm -f $(OUT) *.o
+	rm -f $(OUT) *.o history.txt
 
 check:
 	valgrind -v --tool=memcheck --leak-check=full --show-leak-kinds=all ./$(OUT)
