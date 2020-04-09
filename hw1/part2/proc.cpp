@@ -23,7 +23,7 @@ static string removeSpace_semicolon(string str)
 
 Proc::Proc(string cmd)
 {
-    this->in_fd = (FILE*) malloc();
+    this->in_fd = nullptr;
     this->out_fd = stdout;
     this->err_fd = stderr;
     this->pass = false;

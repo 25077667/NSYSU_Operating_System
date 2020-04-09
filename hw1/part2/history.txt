@@ -1,4 +1,2 @@
-cat history.txt > AAA
-cat AAA
-quot
+echo "AAA" > AAA
 quit
