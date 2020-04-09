@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "colorprint.hpp"
 #include "proc.hpp"
-
 #define EXIT_SHELL(state) exit(state)
 #define EXIT_PASS 4
 #define BUFFER_SIZE 1000
@@ -31,6 +31,7 @@ struct PS {
     bool hostname = 1;
     bool pwd = 0;
     bool prompt = 1;
+    bool rainbow = 0;
 } ps;
 
 
@@ -77,7 +78,8 @@ static int help()
          << "\tFor example:" << endl
          << "\t\tPS=pwd:off" << endl
          << "\t\tPS=name:on" << endl
-         << "\tThe supporting attributes are: pwd, name, hostname, prompt"
+         << "\tThe supporting attributes are: pwd, name, hostname, prompt, "
+            "rainbow"
          << endl;
     return EXIT_PASS;
 }
@@ -130,8 +132,9 @@ static string print_prompt()
 static string get_user_line()
 {
     string singleLine;
-    // while (true) {
-    auto line = linenoise(print_prompt().c_str());
+    print_color(print_prompt(), ps.rainbow);
+
+    auto line = linenoise("");
     if (line == NULL)
         ;
     else if (line[0] != '\0' && line[0] != '/') {
