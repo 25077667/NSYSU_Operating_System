@@ -1,2 +1,5 @@
-echo BOO > A
+ls
+ls | cat
+ls | cat |
+ls | cat | cat
 quit

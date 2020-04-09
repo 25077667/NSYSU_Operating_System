@@ -20,7 +20,10 @@ public:
     int doExecute(vector<FILE *> &);
     void commandParser();
     Proc *prev, *next;
-    bool pass;  // If this command just a file, needn't to execute.
+
+    // If this command just a file, needn't to execute (pass)
+    // If this command have a pipe, will doPipe
+    bool pass, doPipe;
 
 private:
     string command, in_s, out_s, err_s;
@@ -41,11 +44,9 @@ public:
     ~Cmd_q();
 
     void push_back(Proc *);
-    bool empty();
     /* Execute all commands in this queue*/
     int execute(vector<FILE *> &);
     // We do not need pop
-    int size;
     Proc *head, *tail;
 };
 

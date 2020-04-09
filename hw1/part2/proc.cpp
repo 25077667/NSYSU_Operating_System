@@ -2,12 +2,23 @@
 
 #include <algorithm>
 #include <cstring>
+#include <functional>
+#include <random>
 #include <vector>
 
 #include "popen.h"
 
 using namespace std;
 #define BUFFER_SIZE 1000 /* Memory page takes 4K for cache*/
+
+static unsigned int rand_func()
+{
+    random_device rd;
+    auto gen = mt19937_64(rd());
+    uniform_int_distribution<int> dis(0, UINT32_MAX);
+    auto f = bind(dis, gen);
+    return f();
+}
 
 static inline void copy2File(FILE *in, FILE *out)
 {
@@ -31,6 +42,9 @@ static inline void string2out(string s, FILE *out)
     }
 }
 
+/**
+ * This function will not close your file
+ */
 static inline string file2String(FILE *f)
 {
     string s;
@@ -47,6 +61,7 @@ Proc::Proc(string cmd)
     this->out_fd = stdout;
     this->err_fd = stderr;
     this->pass = false;
+    this->doPipe = false;
 
     this->command = cmd;
     this->prev = nullptr;
@@ -79,15 +94,18 @@ void Proc::setSIO(string _in, string _out, string _err)
 int Proc::doExecute(vector<FILE *> &bgPool)
 {
     int errorCode = 0;
-    /*
-     * Redirect to file output that is not a command
-     * Hence this code needn't to execute.
-     */
 
-    if (!this->pass) {
+    if (this->prev && this->prev->doPipe) {
+        auto filename = string("/tmp/myShell_") + to_string(rand_func());
+        auto tmp = fopen(filename.c_str(), "w");
+        string2out(this->in_s, tmp);
+        fclose(tmp);
+        this->command += filename;
+    } else if (!this->pass) {
         this->command += this->in_s;
         // Well, ls might input a '\n' at the begin of the line
         replace(this->command.begin(), this->command.end(), '\n', ' ');
+
 
         this->command.pop_back();  // there is a ' ' in the end
         pid_t get_pid = 0;
@@ -104,7 +122,7 @@ int Proc::doExecute(vector<FILE *> &bgPool)
             }
 
             // pass this output to next input
-            if (this->next)
+            if (this->next && !this->doPipe)
                 this->next->in_s = this->out_s;
             else if (this->out_fd)
                 fputs(this->out_s.c_str(), this->out_fd);
@@ -204,6 +222,7 @@ void Proc::commandParser()
             this->next->pass = true;
         }
     } else if (c == '|') {
+        this->doPipe = true;
         if (!this->next)
             errorCode = 65537;
     } else {
@@ -218,7 +237,6 @@ void Proc::commandParser()
 
 Cmd_q::Cmd_q()
 {
-    this->size = 0;
     this->head = this->tail = nullptr;
 }
 
@@ -230,27 +248,17 @@ Cmd_q::~Cmd_q()
         delete curr;  // Will invoke the distructor automatically
         curr = nextOne;
     }
-    this->size = 0;
-}
-
-bool Cmd_q::empty()
-{
-    return (bool) this->size;
 }
 
 void Cmd_q::push_back(Proc *ele)
 {
     if (this->head == nullptr) {
         this->head = ele;
-        this->tail = ele;
     } else {
         ele->prev = this->tail;
         this->tail->next = ele;
-        this->tail = ele;
     }
-
-    // ele->commandParser();
-    this->size++;
+    this->tail = ele;
 }
 
 
