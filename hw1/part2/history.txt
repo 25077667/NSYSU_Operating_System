@@ -1,5 +1,1 @@
-ls
-ls | cat
-ls | cat |
-ls | cat | cat
-quit
+cd ..

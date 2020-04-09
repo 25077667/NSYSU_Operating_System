@@ -12,6 +12,7 @@
 
 #define EXIT_SHELL(state) exit(state)
 #define EXIT_PASS 4
+#define BUFFER_SIZE 1000
 using namespace std;
 
 extern void mypclose(FILE *);
@@ -55,22 +56,46 @@ int main()
 
 static int help()
 {
-    cout << "This is HELP" << endl;
-    cout << "Not support stderr yet" << endl;
-    cout << "Will compelete single process first!" << endl;
-    cout << "\'quit\' is the special command to exit(0)" << endl;
+    cout << "This is HELP" << endl
+         << "Not support stderr yet" << endl
+         << "Will compelete single process first!" << endl
+         << "\'quit\' is the special command to exit(0)" << endl;
     return EXIT_PASS;
 }
 
 static string print_prompt()
 {
-    auto id_fd = popen("id -u", "r");
-    int id = 1;
-    if (fscanf(id_fd, "%d", &id))
-        pclose(id_fd);
-    string promptSign = ((id) ? "$" : "#");
+    char buffer[BUFFER_SIZE] = {0};
 
-    return promptSign + " ";
+    /* Get id */
+    auto tmp_fd = popen("id -u", "r");
+    int id = 1;
+    if (fscanf(tmp_fd, "%d", &id))
+        pclose(tmp_fd);
+    string promptSign = ((id) ? "$ " : "# ");
+
+    /* Get pwd */
+    tmp_fd = popen("pwd -P", "r");
+    if (fscanf(tmp_fd, "%s", buffer))
+        pclose(tmp_fd);
+    string pwd(buffer, strlen(buffer));
+    memset(buffer, 0, BUFFER_SIZE);
+
+    /* Get user name*/
+    tmp_fd = popen("whoami", "r");
+    if (fscanf(tmp_fd, "%s", buffer))
+        pclose(tmp_fd);
+    string userName(buffer, strlen(buffer));
+    memset(buffer, 0, BUFFER_SIZE);
+
+    /* Get host name */
+    tmp_fd = popen("cat /proc/sys/kernel/hostname", "r");
+    if (fscanf(tmp_fd, "%s", buffer))
+        pclose(tmp_fd);
+    string hostName(buffer, strlen(buffer));
+    memset(buffer, 0, BUFFER_SIZE);
+
+    return userName + "@" + hostName + ":" + pwd + promptSign;
 }
 
 static string get_user_line()
@@ -109,7 +134,10 @@ static int cmd_hook(string cmd)
         exe_result = help();
     else if (cmd == "quit")
         exe_result = EXIT_SUCCESS;
-    else if (cmd == "exit") {
+    else if (cmd.substr(0, cmd.find(" ")) == "cd") {
+        cmd.erase(0, cmd.find(" ") + 1);
+        exe_result = chdir(cmd.c_str()) == 0;
+    } else if (cmd == "exit") {
         cout << "Trying to exit?" << endl
              << "If YES please type \'quit\'" << endl;
     }
