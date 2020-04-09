@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -W -Os -g
+CFLAGS = -Wall -W -Os -g -std=c++14
 OUT = myshell2
 
 obj: 

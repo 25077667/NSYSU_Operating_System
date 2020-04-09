@@ -1,2 +1,5 @@
-sleep 2&
+ls
+ls | cat
+ls | cat |
+ls | cat | cat
 quit

@@ -20,7 +20,10 @@ public:
     int doExecute(vector<FILE *> &);
     void commandParser();
     Proc *prev, *next;
-    bool pass;  // If this command just a file, needn't to execute.
+
+    // If this command just a file, needn't to execute (pass)
+    // If this command have a pipe, will doPipe
+    bool pass, doPipe;
 
 private:
     string command, in_s, out_s, err_s;
