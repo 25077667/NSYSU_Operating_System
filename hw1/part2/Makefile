@@ -5,6 +5,7 @@ OUT = myshell
 
 obj: 
 	gcc $(CFLAGS) -c linenoise.c
+	gcc $(CFLAGS) -c popen.c
 	$(CC) $(CPPFLAGS) -c proc.cpp
 	$(CC) $(CPPFLAGS) -c do_shell.cpp
 

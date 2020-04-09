@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "linenoise.h"
 #include "proc.hpp"
 
 #define EXIT_SHELL(state) exit(state)
@@ -15,7 +14,10 @@
 #define BUFFER_SIZE 1000
 using namespace std;
 
-extern void mypclose(FILE *);
+extern "C" {
+#include "linenoise.h"
+#include "popen.h"
+}
 
 static string get_user_line();
 static int cmd_hook(string cmd);
@@ -136,10 +138,14 @@ static int cmd_hook(string cmd)
         exe_result = EXIT_SUCCESS;
     else if (cmd.substr(0, cmd.find(" ")) == "cd") {
         cmd.erase(0, cmd.find(" ") + 1);
-        exe_result = chdir(cmd.c_str()) == 0;
+        /* chdir: 0 is success, -1 is failed */
+        if (chdir(cmd.c_str())) {
+            cerr << "myshell: cd: " << cmd << ": No such file or directory"
+                 << endl;
+        }
     } else if (cmd == "exit") {
         cout << "Trying to exit?" << endl
-             << "If YES please type \'quit\'" << endl;
+             << "If YES, please type \'quit\'" << endl;
     }
     return exe_result;
 }

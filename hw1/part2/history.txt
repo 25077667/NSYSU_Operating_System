@@ -1,1 +1,3 @@
-cd ..
+cd BOOO
+help
+quit

@@ -6,10 +6,12 @@
 #include <random>
 #include <vector>
 
-#include "popen.h"
-
 using namespace std;
 #define BUFFER_SIZE 1000 /* Memory page takes 4K for cache*/
+
+extern "C" {
+#include "popen.h"
+}
 
 static unsigned int rand_func()
 {
