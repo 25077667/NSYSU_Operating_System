@@ -94,7 +94,7 @@ void Proc::setSIO(string _in, string _out, string _err)
  *
  * TODO: stderr not work now!!
  *
- * @return: the output file descriptor(read only)
+ * @return: the error code
  */
 int Proc::doExecute(vector<FILE *> &bgPool)
 {
@@ -121,30 +121,24 @@ int Proc::doExecute(vector<FILE *> &bgPool)
                 cout << '[' << get_pid << ']' << endl;
                 bgPool.push_back(result_fd);
             } else {
-                // cout << "Before close file >>>>>" << endl;
                 this->out_s = file2String(result_fd);
                 mypclose(result_fd);
-                // cout << "<<<<< Closed file" << endl;
             }
-
-            // pass this output to next input
-            if (this->next)
-                this->next->in_s = this->out_s;
-            else if (this->out_fd)
+            if (this->out_fd && !this->next)
                 fputs(this->out_s.c_str(), this->out_fd);
-            else
-                errorCode = 2;
         }
     } else {
-        if (this->next)
-            this->next->in_s = this->out_s;
-        // other conditions are "redirection and in the end of command"
-        if (this->out_fd != stdout && this->out_fd) {
+        /*
+         * Other conditions are "redirection and in the end of command"
+         * Need to judge if the out_fd is exist, if not exist that is create
+         * file error.
+         */
+        if (this->out_fd != stdout && this->out_fd && !this->next)
             fputs(this->in_s.c_str(), this->out_fd);
-            fclose(this->out_fd);
-            this->out_fd = stdout;
-        }
     }
+    // pass this output to next input
+    if (this->next)
+        this->next->in_s = this->out_s;
     raiseError(errorCode);
     return errorCode;
 }
@@ -194,8 +188,7 @@ void Proc::commandParser()
     /**
      * This identifier will get the last word to redirection
      *
-     * TODO: support stderr redirection, multi-redirection, append
-     * string identifier;
+     * TODO: support stderr redirection, append string identifier;
      */
     char c = this->command.back();
     auto _in_s = (this->prev) ? this->prev->out_s : string();

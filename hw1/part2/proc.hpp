@@ -15,7 +15,6 @@ class Proc
 public:
     Proc(string);
     ~Proc();
-    void setAllIO(FILE *, FILE *, FILE *);
     void setSIO(string, string, string);
     int doExecute(vector<FILE *> &);
     void commandParser();
@@ -35,7 +34,7 @@ private:
 
 /**
  * A queue of Proc
- * Can inspire all the cammands and execute
+ * Can ripple executing commands
  */
 class Cmd_q
 {
@@ -46,7 +45,7 @@ public:
     void push_back(Proc *);
     /* Execute all commands in this queue*/
     int execute(vector<FILE *> &);
-    // We do not need pop
+    // We do not need pop, will remove all while calling distructor
     Proc *head, *tail;
 };
 
