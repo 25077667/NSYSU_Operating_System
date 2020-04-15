@@ -1,6 +1,6 @@
 CC = g++
-CFLAGS = -Wall -W -Os -g
-CPPFLAGS = -Wall -W -Os -g -std=c++14
+CFLAGS = -Wall -W -Og -g
+CPPFLAGS = -Wall -W -Og -g -std=c++14
 OUT = myshell
 
 obj: 
@@ -14,7 +14,7 @@ all: obj
 	$(CC) -o $(OUT) *.o
 
 clean:
-	rm -f $(OUT) *.o history.txt
+	rm -f $(OUT) *.o history.txt .gdb_history peda-session-*
 
 check:
 	valgrind -v --tool=memcheck --leak-check=full --show-leak-kinds=all ./$(OUT)

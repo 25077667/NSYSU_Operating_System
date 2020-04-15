@@ -60,6 +60,7 @@ static inline string file2String(FILE *f)
 
 Proc::Proc(string cmd)
 {
+    this->in_fd = stdin;
     this->out_fd = stdout;
     this->err_fd = stderr;
     this->pass = false;
@@ -72,6 +73,8 @@ Proc::Proc(string cmd)
 
 Proc::~Proc()
 {
+    if (this->in_fd != stdin)
+        pclose(in_fd);
     if (this->out_fd != stdout)
         pclose(this->out_fd);
     if (this->err_fd != stderr)
@@ -101,15 +104,14 @@ int Proc::doExecute(vector<FILE *> &bgPool)
         auto filename = string("/tmp/myShell_") + to_string(rand_func());
         auto tmp = fopen(filename.c_str(), "w");
         string2out(this->in_s, tmp);
+        fflush(tmp);
         fclose(tmp);
         this->command += filename;
-    } else if (!this->pass) {
+        this->in_s.clear();
+    }
+    if (!this->pass) {
         this->command += this->in_s;
-        // Well, ls might input a '\n' at the begin of the line
-        replace(this->command.begin(), this->command.end(), '\n', ' ');
 
-
-        this->command.pop_back();  // there is a ' ' in the end
         pid_t get_pid = 0;
         auto result_fd = mypopen(this->command.c_str(), "r", &get_pid);
         if (result_fd == NULL) {
@@ -119,12 +121,14 @@ int Proc::doExecute(vector<FILE *> &bgPool)
                 cout << '[' << get_pid << ']' << endl;
                 bgPool.push_back(result_fd);
             } else {
+                // cout << "Before close file >>>>>" << endl;
                 this->out_s = file2String(result_fd);
                 mypclose(result_fd);
+                // cout << "<<<<< Closed file" << endl;
             }
 
             // pass this output to next input
-            if (this->next && !this->doPipe)
+            if (this->next)
                 this->next->in_s = this->out_s;
             else if (this->out_fd)
                 fputs(this->out_s.c_str(), this->out_fd);

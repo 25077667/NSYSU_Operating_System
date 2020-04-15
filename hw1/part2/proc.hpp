@@ -28,7 +28,7 @@ public:
 private:
     string command, in_s, out_s, err_s;
     int status;
-    FILE *out_fd, *err_fd;
+    FILE *in_fd, *out_fd, *err_fd;
     void raiseError(int);
 };
 

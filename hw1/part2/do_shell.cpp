@@ -132,9 +132,10 @@ static string print_prompt()
 static string get_user_line()
 {
     string singleLine;
-    print_color(print_prompt(), ps.rainbow);
 
+    print_color(print_prompt(), ps.rainbow);
     auto line = linenoise("");
+
     if (line == NULL)
         ;
     else if (line[0] != '\0' && line[0] != '/') {
@@ -224,29 +225,32 @@ static vector<string> separate_command(string commands)
         if (found != string::npos) {
             command_set.push_back(commands.substr(0, ++found));
             commands.erase(0, found);
+            continue;
         }
 
         found = commands.find(">");
         if (found != string::npos) {
             command_set.push_back(commands.substr(0, ++found));
             commands.erase(0, found);
+            continue;
         }
 
         found = commands.find("<");
         if (found != string::npos) {
             command_set.push_back(commands.substr(0, ++found));
             commands.erase(0, found);
+            continue;
         }
 
         found = commands.find(";");
         if (found != string::npos) {
             command_set.push_back(commands.substr(0, ++found));
             commands.erase(0, found);
+            continue;
         }
     }
 
     /* Redirect to */
-
     return command_set;
 }
 
