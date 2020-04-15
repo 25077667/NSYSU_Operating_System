@@ -12,20 +12,19 @@
 #define EXIT_SHELL(state) exit(state)
 #define EXIT_PASS 4
 #define BUFFER_SIZE 1000
-using namespace std;
 
 extern "C" {
 #include "linenoise.h"
 #include "popen.h"
 }
 
-static string get_user_line();
-static int cmd_hook(string cmd);
-static vector<string> separate_command(string commands);
-static string print_prompt();
+static std::string get_user_line();
+static int cmd_hook(std::string cmd);
+static std::vector<std::string> separate_command(std::string commands);
+static std::string print_prompt();
 static int help();
 static bool bothAreSpaces(char lhs, char rhs);
-static void clean_bgPool(vector<FILE *> &);
+static void clean_bgPool(std::vector<FILE *> &);
 struct PS {
     bool name = 1;
     bool hostname = 1;
@@ -37,12 +36,12 @@ struct PS {
 
 int main()
 {
-    cout << "YOU ARE IN MY SHELL!" << endl;
-    cout << "Type \'help\' to get helps." << endl;
+    std::cout << "YOU ARE IN MY SHELL!" << std::endl;
+    std::cout << "Type \'help\' to get helps." << std::endl;
     int errorCode = EXIT_SUCCESS;
-    vector<FILE *> bgPool;
+    std::vector<FILE *> bgPool;
     while (true) {
-        string singleLine = get_user_line();
+        std::string singleLine = get_user_line();
 
         /* Check user diden't quit or something*/
         errorCode = cmd_hook(singleLine);
@@ -66,28 +65,29 @@ int main()
 
 static int help()
 {
-    cout << "This is HELP" << endl
-         << "Not support stderr yet" << endl
-         << "Will compelete single process first!" << endl
-         << "\'quit\' is the special command to exit(0)" << endl
-         << endl
-         << "SET promt:" << endl
-         << "\tYou can say some thing turn on and off!" << endl
-         << "\tYes, only on and off" << endl
-         << endl
-         << "\tFor example:" << endl
-         << "\t\tPS=pwd:off" << endl
-         << "\t\tPS=name:on" << endl
-         << "\tThe supporting attributes are: pwd, name, hostname, prompt, "
-            "rainbow"
-         << endl;
+    std::cout
+        << "This is HELP" << std::endl
+        << "Not support stderr yet" << std::endl
+        << "Will compelete single process first!" << std::endl
+        << "\'quit\' is the special command to exit(0)" << std::endl
+        << std::endl
+        << "SET promt:" << std::endl
+        << "\tYou can say some thing turn on and off!" << std::endl
+        << "\tYes, only on and off" << std::endl
+        << std::endl
+        << "\tFor example:" << std::endl
+        << "\t\tPS=pwd:off" << std::endl
+        << "\t\tPS=name:on" << std::endl
+        << "\tThe supporting attributes are: pwd, name, hostname, prompt, "
+           "rainbow"
+        << std::endl;
     return EXIT_PASS;
 }
 
-static string print_prompt()
+static std::string print_prompt()
 {
     char buffer[BUFFER_SIZE] = {0};
-    string promptSign, pwd, userName, hostName;
+    std::string promptSign, pwd, userName, hostName;
     FILE *tmp_fd;
 
     /* Get id */
@@ -104,7 +104,7 @@ static string print_prompt()
         tmp_fd = popen("pwd -P", "r");
         if (fscanf(tmp_fd, "%s", buffer))
             pclose(tmp_fd);
-        pwd = ":" + string(buffer, strlen(buffer));
+        pwd = ":" + std::string(buffer, strlen(buffer));
         memset(buffer, 0, BUFFER_SIZE);
     }
 
@@ -113,7 +113,7 @@ static string print_prompt()
         tmp_fd = popen("whoami", "r");
         if (fscanf(tmp_fd, "%s", buffer))
             pclose(tmp_fd);
-        userName = string(buffer, strlen(buffer));
+        userName = std::string(buffer, strlen(buffer));
         memset(buffer, 0, BUFFER_SIZE);
     }
 
@@ -122,16 +122,16 @@ static string print_prompt()
         tmp_fd = popen("cat /proc/sys/kernel/hostname", "r");
         if (fscanf(tmp_fd, "%s", buffer))
             pclose(tmp_fd);
-        hostName = "@" + string(buffer, strlen(buffer));
+        hostName = "@" + std::string(buffer, strlen(buffer));
         memset(buffer, 0, BUFFER_SIZE);
     }
 
     return userName + hostName + pwd + promptSign;
 }
 
-static string get_user_line()
+static std::string get_user_line()
 {
-    string singleLine;
+    std::string singleLine;
 
     print_color(print_prompt(), ps.rainbow);
     auto line = linenoise("");
@@ -139,7 +139,7 @@ static string get_user_line()
     if (line == NULL)
         ;
     else if (line[0] != '\0' && line[0] != '/') {
-        singleLine = string(line);
+        singleLine = std::string(line);
         linenoiseHistoryAdd(line);           /* Add to the history. */
         linenoiseHistorySave("history.txt"); /* Save the history on disk. */
         // break;
@@ -159,7 +159,7 @@ static string get_user_line()
 }
 
 /* This function might out of date, I'm going to be deleted */
-static int cmd_hook(string cmd)
+static int cmd_hook(std::string cmd)
 {
     /* Return 0 if execution succeed */
     int exe_result = EXIT_FAILURE;
@@ -174,7 +174,7 @@ static int cmd_hook(string cmd)
         /* chdir: 0 is success, -1 is failed */
         if (chdir(cmd.c_str())) {
             cerr << "myshell: cd: " << cmd << ": No such file or directory"
-                 << endl;
+                 << std::endl;
         }
     }
 
@@ -195,16 +195,16 @@ static int cmd_hook(string cmd)
         else if (attribute == "rainbow")
             ps.rainbow = (action == "on");
         else
-            cerr << "Wrong format for setting PS!!" << endl;
+            cerr << "Wrong format for setting PS!!" << std::endl;
 
     } else if (cmd == "exit") {
-        cout << "Trying to exit?" << endl
-             << "If YES, please type \'quit\'" << endl;
+        std::cout << "Trying to exit?" << std::endl
+                  << "If YES, please type \'quit\'" << std::endl;
     }
     return exe_result;
 }
 
-static vector<string> separate_command(string commands)
+static std::vector<std::string> separate_command(std::string commands)
 {
     /* Remove duplicate <space> */
     commands += ";";
@@ -212,7 +212,7 @@ static vector<string> separate_command(string commands)
     commands.erase(new_end, commands.end());
 
     /* semicolon is end of command */
-    vector<string> command_set;
+    std::vector<std::string> command_set;
 
     /*
      *  Priority table:
@@ -222,28 +222,28 @@ static vector<string> separate_command(string commands)
      */
     while (commands.length()) {
         auto found = commands.find("|");
-        if (found != string::npos) {
+        if (found != std::string::npos) {
             command_set.push_back(commands.substr(0, ++found));
             commands.erase(0, found);
             continue;
         }
 
         found = commands.find(">");
-        if (found != string::npos) {
+        if (found != std::string::npos) {
             command_set.push_back(commands.substr(0, ++found));
             commands.erase(0, found);
             continue;
         }
 
         found = commands.find("<");
-        if (found != string::npos) {
+        if (found != std::string::npos) {
             command_set.push_back(commands.substr(0, ++found));
             commands.erase(0, found);
             continue;
         }
 
         found = commands.find(";");
-        if (found != string::npos) {
+        if (found != std::string::npos) {
             command_set.push_back(commands.substr(0, ++found));
             commands.erase(0, found);
             continue;
@@ -259,7 +259,7 @@ static inline bool bothAreSpaces(char lhs, char rhs)
     return (lhs == rhs) && (lhs == ' ');
 }
 
-static void clean_bgPool(vector<FILE *> &v)
+static void clean_bgPool(std::vector<FILE *> &v)
 {
     for (auto i : v)
         mypclose(i);
