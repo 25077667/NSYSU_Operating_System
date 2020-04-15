@@ -5,7 +5,27 @@
 #include <vector>
 using namespace std;
 
+class Proc_fd
+{
+public:
+    Proc_fd();
+    ~Proc_fd();
+    int get_fd_i(int index);
+    FILE *get_fd(int index);
+    int set_pipe(int _in, int _out);
+    int set_pipe(FILE *_in, FILE *_out);
+    int read(string &);
+    int write(string, int);
 
+private:
+    /**
+     * About this file descriptor array
+     * fd[0] is for input
+     * fd[1] is for output
+     * fd[2] is for error
+     */
+    FILE *fd[3];
+};
 
 /**
  * A single command handle a process.

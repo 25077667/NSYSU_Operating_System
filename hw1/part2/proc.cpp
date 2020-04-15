@@ -8,6 +8,11 @@
 
 using namespace std;
 #define BUFFER_SIZE 1000 /* Memory page takes 4K for cache*/
+#define ERR_FILE_NOT_EXIST 1
+#define ERR_CMD_NOT_FOUND 65537
+#define ERR_AMBIGUOUS_CMD 131073
+#define ERR_UNKNOWN_ERROR 2
+#define ERR_WRONG_FD 196609
 
 extern "C" {
 #include "popen.h"
@@ -57,6 +62,75 @@ static inline string file2String(FILE *f)
     }
     return s;
 }
+
+Proc_fd::Proc_fd()
+{
+    this->fd[0] = stdin;
+    this->fd[1] = stdout;
+    this->fd[2] = stderr;
+}
+
+Proc_fd::~Proc_fd()
+{
+    if (this->fd[0] != stdin)
+        fclose(this->fd[0]);
+    if (this->fd[1] != stdout)
+        fclose(this->fd[1]);
+    if (this->fd[2] != stderr)
+        fclose(this->fd[2]);
+}
+
+int Proc_fd::get_fd_i(int index)
+{
+    if (index < 0 || index > 2)
+        return ERR_WRONG_FD;
+    return fileno(this->fd[index]);
+}
+
+FILE *Proc_fd::get_fd(int index)
+{
+    if (index < 0 || index > 2)
+        return NULL;
+    return this->fd[index];
+}
+
+int Proc_fd::set_pipe(int _sender_fd, int _receiver_fd)
+{
+    int fd[2] = {_sender_fd, _receiver_fd};
+    return pipe(fd);
+}
+
+int Proc_fd::set_pipe(FILE *_sender_fd, FILE *_receiver_fd)
+{
+    int fd[2] = {fileno(_sender_fd), fileno(_receiver_fd)};
+    return pipe(fd);
+}
+
+/**
+ * Must send before you read
+ * Or you will get an infinite loop.
+ * Be careful for creadting the pipe first
+ */
+int Proc_fd::read(string &_restrict)
+{
+    int errorCode = 0;
+    _restrict = file2String(this->fd[0]);
+    return errorCode;
+}
+
+/**
+ * This index is 1 or 2 only
+ * 1 for stdout, 2 for stderr
+ * Be careful for creadting the pipe first
+ */
+int Proc_fd::write(string str, int index)
+{
+    int errorCode = 0;
+    string2out(str, this->fd[index]);
+    return errorCode;
+}
+
+/////////////////////Proc zone/////////////////////
 
 Proc::Proc(string cmd)
 {
@@ -115,7 +189,7 @@ int Proc::doExecute(vector<FILE *> &bgPool)
         pid_t get_pid = 0;
         auto result_fd = mypopen(this->command.c_str(), "r", &get_pid);
         if (result_fd == NULL) {
-            errorCode = 65537;  // command not cfound
+            errorCode = ERR_CMD_NOT_FOUND;  // command not cfound
         } else {
             if (this->command.back() == '&') {
                 cout << '[' << get_pid << ']' << endl;
@@ -158,6 +232,7 @@ int Proc::doExecute(vector<FILE *> &bgPool)
  * denied
  * 0000 0000 0000 0001 0000 0000 0000 0001: command not found
  * 0000 0000 0000 0010 0000 0000 0000 0001: ambiguous command
+ * 0000 0000 0000 0011 0000 0000 0000 0001: wrong file descriptor
  *
  * rb:
  * "0000 0000 0000 0010" unknown error
@@ -166,16 +241,19 @@ int Proc::doExecute(vector<FILE *> &bgPool)
 void Proc::raiseError(int errorCode)
 {
     switch (errorCode) {
-    case 1:
+    case ERR_FILE_NOT_EXIST:
         perror("File is not exist or permission denied\n");
         break;
-    case 65537:
+    case ERR_CMD_NOT_FOUND:
         perror("Command not found");
         break;
-    case 131073:
+    case ERR_AMBIGUOUS_CMD:
         perror("Ambiguous command");
         break;
-    case 2:
+    case ERR_WRONG_FD:
+        perror("Wrong file descriptor");
+        break;
+    case ERR_UNKNOWN_ERROR:
         perror("unknown error");
     default:
         break;
@@ -200,7 +278,7 @@ void Proc::commandParser()
     else if (c == '>') {
         // Next command is a file
         if (!this->next) {  // File not exist
-            errorCode = 1;
+            errorCode = ERR_FILE_NOT_EXIST;
         } else {
             auto fileName = removeSpace_semicolon(this->next->command);
             this->next->out_fd = fopen(fileName.c_str(), "w");
@@ -208,12 +286,12 @@ void Proc::commandParser()
         }
     } else if (c == '<') {
         if (!this->next)
-            errorCode = 1;
+            errorCode = ERR_FILE_NOT_EXIST;
         else {
             auto fileName = removeSpace_semicolon(this->next->command);
             auto _in_df = fopen(fileName.c_str(), "r");
             if (_in_df == NULL)
-                errorCode = 1;
+                errorCode = ERR_FILE_NOT_EXIST;
             else {
                 this->in_s = file2String(_in_df);
                 fclose(_in_df);
@@ -223,16 +301,16 @@ void Proc::commandParser()
     } else if (c == '|') {
         this->doPipe = true;
         if (!this->next)
-            errorCode = 65537;
+            errorCode = ERR_CMD_NOT_FOUND;
     } else {
-        errorCode = 131073;
+        errorCode = ERR_AMBIGUOUS_CMD;
     }
 
     raiseError(errorCode);
     this->command.back() = ' ';
 }
 
-/////////////////////Cmd_q zone///////////////////////
+/////////////////////Cmd_q zone/////////////////////
 
 Cmd_q::Cmd_q()
 {
