@@ -18,6 +18,11 @@
         "string": "cpp",
         "unordered_map": "cpp",
         "string_view": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "*.tcc": "cpp",
+        "fstream": "cpp",
+        "limits": "cpp",
+        "cstdio": "cpp",
+        "iostream": "cpp"
     }
 }

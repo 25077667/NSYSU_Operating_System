@@ -10,13 +10,12 @@ class Proc_fd
 public:
     Proc_fd();
     ~Proc_fd();
-    int get_fd_i(int index);
     FILE *get_fd(int index);
-    int set_pipe(int _in, int _out);
-    int set_pipe(FILE *_in, FILE *_out);
-    int redirect(string filename, string mode);
-    int read(string &);
-    int write(string, int);
+    int set_pipe(int _in);
+    int set_pipe(FILE *_in);
+    FILE *redirect(string filename, string mode);
+    void read(string &);
+    void write(string, int);
 
 private:
     /**
@@ -44,13 +43,13 @@ public:
     Proc *prev, *next;
 
     // If this command just a file, needn't to execute (pass)
-    // If this command have a pipe, will doPipe
-    bool pass, doPipe;
+    bool pass;
 
 private:
-    string command, in_s, out_s, err_s;
+    string command;
     int status;
-    FILE *in_fd, *out_fd, *err_fd;
+    Proc_fd fd;
+    // FILE *in_fd, *out_fd, *err_fd;
     void raiseError(int);
 };
 

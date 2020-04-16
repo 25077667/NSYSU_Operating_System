@@ -2,8 +2,6 @@
 
 #include <algorithm>
 #include <cstring>
-#include <functional>
-#include <random>
 #include <vector>
 
 using namespace std;
@@ -11,22 +9,14 @@ using namespace std;
 #define ERR_FILE_NOT_EXIST 1
 #define ERR_CMD_NOT_FOUND 65537
 #define ERR_AMBIGUOUS_CMD 131073
-#define ERR_UNKNOWN_ERROR 2
 #define ERR_WRONG_FD 196609
 #define ERR_WRONG_FILE_MODE 262145
+#define ERR_PIPE 2
 
 extern "C" {
 #include "popen.h"
 }
 
-static unsigned int rand_func()
-{
-    random_device rd;
-    auto gen = mt19937_64(rd());
-    uniform_int_distribution<int> dis(0, UINT32_MAX);
-    auto f = bind(dis, gen);
-    return f();
-}
 
 static inline void copy2File(FILE *in, FILE *out)
 {
@@ -43,11 +33,14 @@ static string removeSpace_semicolon(string str)
     return str;
 }
 
+/**
+ * Will close the file to sent the end of line
+ */
 static inline void string2out(string s, FILE *out)
 {
-    if (out && out != stdin) {
-        fputs(s.c_str(), out);
-    }
+    fprintf(out, "%s", s.c_str());
+    fprintf(out, "%c", 3);
+    fflush(out);
 }
 
 /**
@@ -81,13 +74,6 @@ Proc_fd::~Proc_fd()
         fclose(this->fd[2]);
 }
 
-int Proc_fd::get_fd_i(int index)
-{
-    if (index < 0 || index > 2)
-        return ERR_WRONG_FD;
-    return fileno(this->fd[index]);
-}
-
 FILE *Proc_fd::get_fd(int index)
 {
     if (index < 0 || index > 2)
@@ -96,16 +82,22 @@ FILE *Proc_fd::get_fd(int index)
 }
 
 // TODO: here might change to "pipe sender" or somthing
-int Proc_fd::set_pipe(int _sender_fd, int _receiver_fd)
+int Proc_fd::set_pipe(int _sender_i, int _receiver_i)
 {
-    int fd[2] = {_sender_fd, _receiver_fd};
-    return pipe(fd);
+    int errorCode = 0;
+    int fd[2];
+    if (pipe(fd) < 0) {
+        errorCode = ERR_PIPE;
+    } else {
+        dup2(fd[0], STDIN_FILENO);
+        dup2(fd[0], _sender_i);
+    }
+    return errorCode;
 }
 
 int Proc_fd::set_pipe(FILE *_sender_fd, FILE *_receiver_fd)
 {
-    int fd[2] = {fileno(_sender_fd), fileno(_receiver_fd)};
-    return pipe(fd);
+    return set_pipe(fileno(_sender_fd), fileno(_receiver_fd));
 }
 
 /**
@@ -113,31 +105,27 @@ int Proc_fd::set_pipe(FILE *_sender_fd, FILE *_receiver_fd)
  * If you want '>' to a file, set mode to be "w"
  * If you want '<' from a file, set mode to be "r"
  *
- * Return: errorCode
+ * Return: File ptr
  */
-int Proc_fd::redirect(string filename, string mode)
+FILE *Proc_fd::redirect(string filename, string mode)
 {
-    int errorCode = ERR_WRONG_FILE_MODE;
+    auto result_fd = fopen(filename.c_str(), mode.c_str());
     if (mode.at(0) == 'r') {
-        this->fd[0] = fopen(filename.c_str(), mode.c_str());
-        errorCode = 0;
-    } else if (mode.at(0) == 'w') {
-        this->fd[1] = fopen(filename.c_str(), mode.c_str());
-        errorCode = 0;
-    }
-    return errorCode;
+        dup2(fileno(result_fd), STDIN_FILENO);
+    } else if (mode.at(0) == 'w')
+        this->fd[1] = result_fd;
+    return result_fd;
 }
 
 /**
+ * Read from in_fd
  * Must send before you read
  * Or you will get an infinite loop.
- * Be careful for creadting the pipe first
+ * Be careful for creadting the pipe first.
  */
-int Proc_fd::read(string &_restrict)
+void Proc_fd::read(string &_restrict)
 {
-    int errorCode = 0;
     _restrict = file2String(this->fd[0]);
-    return errorCode;
 }
 
 /**
@@ -145,43 +133,24 @@ int Proc_fd::read(string &_restrict)
  * 1 for stdout, 2 for stderr
  * Be careful for creadting the pipe first
  */
-int Proc_fd::write(string str, int index)
+void Proc_fd::write(string str, int index)
 {
-    int errorCode = 0;
     string2out(str, this->fd[index]);
-    return errorCode;
 }
 
 /////////////////////Proc zone/////////////////////
 
 Proc::Proc(string cmd)
 {
-    this->in_fd = stdin;
-    this->out_fd = stdout;
-    this->err_fd = stderr;
-    this->pass = false;
-    this->doPipe = false;
-
     this->command = cmd;
+    this->pass = false;
     this->prev = nullptr;
     this->next = nullptr;
 }
 
 Proc::~Proc()
 {
-    if (this->in_fd != stdin)
-        pclose(in_fd);
-    if (this->out_fd != stdout)
-        pclose(this->out_fd);
-    if (this->err_fd != stderr)
-        fclose(this->err_fd);
-}
-
-void Proc::setSIO(string _in, string _out, string _err)
-{
-    this->in_s = _in;
-    this->out_s = _out;
-    this->err_s = _err;
+    // Will auto invoke Proc_fd's distructor
 }
 
 /**
@@ -196,18 +165,7 @@ int Proc::doExecute(vector<FILE *> &bgPool)
 {
     int errorCode = 0;
 
-    if (this->prev && this->prev->doPipe) {
-        auto filename = string("/tmp/myShell_") + to_string(rand_func());
-        auto tmp = fopen(filename.c_str(), "w");
-        string2out(this->in_s, tmp);
-        fflush(tmp);
-        fclose(tmp);
-        this->command += filename;
-        this->in_s.clear();
-    }
     if (!this->pass) {
-        this->command += this->in_s;
-
         pid_t get_pid = 0;
         auto result_fd = mypopen(this->command.c_str(), "r", &get_pid);
         if (result_fd == NULL) {
@@ -217,24 +175,12 @@ int Proc::doExecute(vector<FILE *> &bgPool)
                 cout << '[' << get_pid << ']' << endl;
                 bgPool.push_back(result_fd);
             } else {
-                this->out_s = file2String(result_fd);
+                auto result_s = file2String(result_fd);
+                this->fd.write(result_s, 1);
                 mypclose(result_fd);
             }
-            if (this->out_fd && !this->next)
-                fputs(this->out_s.c_str(), this->out_fd);
         }
-    } else {
-        /*
-         * Other conditions are "redirection and in the end of command"
-         * Need to judge if the out_fd is exist, if not exist that is create
-         * file error.
-         */
-        if (this->out_fd != stdout && this->out_fd && !this->next)
-            fputs(this->in_s.c_str(), this->out_fd);
     }
-    // pass this output to next input
-    if (this->next)
-        this->next->in_s = this->out_s;
     raiseError(errorCode);
     return errorCode;
 }
@@ -258,8 +204,8 @@ int Proc::doExecute(vector<FILE *> &bgPool)
  * 0000 0000 0000 0100 0000 0000 0000 0001: wrong file mode
  *
  * rb:
- * "0000 0000 0000 0010" unknown error
- *  0000 0000 0000 0000 0000 0000 0000 0010: unknown error
+ * "0000 0000 0000 0010" pipe error
+ *  0000 0000 0000 0000 0000 0000 0000 0010: pipe error
  */
 void Proc::raiseError(int errorCode)
 {
@@ -279,8 +225,8 @@ void Proc::raiseError(int errorCode)
     case ERR_WRONG_FILE_MODE:
         perror("Wrong file mode");
         break;
-    case ERR_UNKNOWN_ERROR:
-        perror("unknown error");
+    case ERR_PIPE:
+        perror("Pipe error");
     default:
         break;
     }
@@ -295,39 +241,24 @@ void Proc::commandParser()
      * TODO: support stderr redirection, append string identifier;
      */
     char c = this->command.back();
-    auto _in_s = (this->prev) ? this->prev->out_s : string();
-    auto _out_s = (this->next) ? this->next->in_s : string();
-    auto _err_s = this->err_s;
-    setSIO(_in_s, _out_s, err_s);
     if (c == ';')
         ;
-    else if (c == '>') {
+    else if (c == '>' || c == '<') {
         // Next command is a file
         if (!this->next) {  // File not exist
             errorCode = ERR_FILE_NOT_EXIST;
         } else {
             auto fileName = removeSpace_semicolon(this->next->command);
-            this->next->out_fd = fopen(fileName.c_str(), "w");
+            auto fd = this->fd.redirect(fileName, (c == '>') ? "w" : "r");
             this->next->pass = true;
-        }
-    } else if (c == '<') {
-        if (!this->next)
-            errorCode = ERR_FILE_NOT_EXIST;
-        else {
-            auto fileName = removeSpace_semicolon(this->next->command);
-            auto _in_df = fopen(fileName.c_str(), "r");
-            if (_in_df == NULL)
-                errorCode = ERR_FILE_NOT_EXIST;
-            else {
-                this->in_s = file2String(_in_df);
-                fclose(_in_df);
-            }
-            this->next->pass = true;
+            errorCode = (fd) ? errorCode : ERR_WRONG_FD;
         }
     } else if (c == '|') {
-        this->doPipe = true;
         if (!this->next)
             errorCode = ERR_CMD_NOT_FOUND;
+        else {
+            this->fd.set_pipe(this->fd.get_fd(1));
+        }
     } else {
         errorCode = ERR_AMBIGUOUS_CMD;
     }
@@ -355,26 +286,29 @@ Cmd_q::~Cmd_q()
 
 void Cmd_q::push_back(Proc *ele)
 {
-    if (this->head == nullptr) {
+    ele->prev = this->tail;
+    if (this->head == nullptr)
         this->head = ele;
-    } else {
-        ele->prev = this->tail;
+    else
         this->tail->next = ele;
-    }
     this->tail = ele;
 }
-
 
 /**
  * Execute all the commands and return the status code while exist
  */
 int Cmd_q::execute(vector<FILE *> &bgPool)
 {
+    int std_save[3] = {dup(STDIN_FILENO), dup(STDOUT_FILENO),
+                       dup(STDERR_FILENO)};
     for (auto curr = this->head; curr; curr = curr->next)
         curr->commandParser();
     auto errorCode = 0;
-    for (auto curr = this->head; curr; curr = curr->next) {
+    for (auto curr = this->head; curr; curr = curr->next)
         errorCode = curr->doExecute(bgPool);
-    }
+
+    dup2(std_save[0], STDIN_FILENO);
+    dup2(std_save[1], STDOUT_FILENO);
+    dup2(std_save[2], STDERR_FILENO);
     return errorCode;
 }
