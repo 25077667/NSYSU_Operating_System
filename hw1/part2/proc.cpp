@@ -13,6 +13,7 @@ using namespace std;
 #define ERR_AMBIGUOUS_CMD 131073
 #define ERR_UNKNOWN_ERROR 2
 #define ERR_WRONG_FD 196609
+#define ERR_WRONG_FILE_MODE 262145
 
 extern "C" {
 #include "popen.h"
@@ -94,6 +95,7 @@ FILE *Proc_fd::get_fd(int index)
     return this->fd[index];
 }
 
+// TODO: here might change to "pipe sender" or somthing
 int Proc_fd::set_pipe(int _sender_fd, int _receiver_fd)
 {
     int fd[2] = {_sender_fd, _receiver_fd};
@@ -104,6 +106,26 @@ int Proc_fd::set_pipe(FILE *_sender_fd, FILE *_receiver_fd)
 {
     int fd[2] = {fileno(_sender_fd), fileno(_receiver_fd)};
     return pipe(fd);
+}
+
+/**
+ * Give R/W method for current "Proc"
+ * If you want '>' to a file, set mode to be "w"
+ * If you want '<' from a file, set mode to be "r"
+ *
+ * Return: errorCode
+ */
+int Proc_fd::redirect(string filename, string mode)
+{
+    int errorCode = ERR_WRONG_FILE_MODE;
+    if (mode.at(0) == 'r') {
+        this->fd[0] = fopen(filename.c_str(), mode.c_str());
+        errorCode = 0;
+    } else if (mode.at(0) == 'w') {
+        this->fd[1] = fopen(filename.c_str(), mode.c_str());
+        errorCode = 0;
+    }
+    return errorCode;
 }
 
 /**
@@ -233,6 +255,7 @@ int Proc::doExecute(vector<FILE *> &bgPool)
  * 0000 0000 0000 0001 0000 0000 0000 0001: command not found
  * 0000 0000 0000 0010 0000 0000 0000 0001: ambiguous command
  * 0000 0000 0000 0011 0000 0000 0000 0001: wrong file descriptor
+ * 0000 0000 0000 0100 0000 0000 0000 0001: wrong file mode
  *
  * rb:
  * "0000 0000 0000 0010" unknown error
@@ -252,6 +275,9 @@ void Proc::raiseError(int errorCode)
         break;
     case ERR_WRONG_FD:
         perror("Wrong file descriptor");
+        break;
+    case ERR_WRONG_FILE_MODE:
+        perror("Wrong file mode");
         break;
     case ERR_UNKNOWN_ERROR:
         perror("unknown error");

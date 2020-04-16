@@ -14,6 +14,7 @@ public:
     FILE *get_fd(int index);
     int set_pipe(int _in, int _out);
     int set_pipe(FILE *_in, FILE *_out);
+    int redirect(string filename, string mode);
     int read(string &);
     int write(string, int);
 
