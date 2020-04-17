@@ -11,11 +11,12 @@ public:
     Proc_fd();
     ~Proc_fd();
     FILE *get_fd(int index);
-    int set_pipe(int _in);
-    int set_pipe(FILE *_in);
+    int set_pipe(int, string &);
+    int set_pipe(FILE *, string &);
     FILE *redirect(string filename, string mode);
     void read(string &);
     void write(string, int);
+    string in_buf;
 
 private:
     /**

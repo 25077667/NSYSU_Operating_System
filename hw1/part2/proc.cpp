@@ -82,22 +82,24 @@ FILE *Proc_fd::get_fd(int index)
 }
 
 // TODO: here might change to "pipe sender" or somthing
-int Proc_fd::set_pipe(int _sender_i, int _receiver_i)
+int Proc_fd::set_pipe(int _sender_i, string &_receiver_buf)
 {
-    int errorCode = 0;
-    int fd[2];
-    if (pipe(fd) < 0) {
-        errorCode = ERR_PIPE;
-    } else {
-        dup2(fd[0], STDIN_FILENO);
-        dup2(fd[0], _sender_i);
-    }
-    return errorCode;
+    return set_pipe(fdopen(_sender_i, "r"), _receiver_buf);
 }
 
-int Proc_fd::set_pipe(FILE *_sender_fd, FILE *_receiver_fd)
+int Proc_fd::set_pipe(FILE *_sender_fd, string &_receiver_buf)
 {
-    return set_pipe(fileno(_sender_fd), fileno(_receiver_fd));
+    int errorCode = 0;
+    if (_sender_fd < 0 || &_receiver_buf == nullptr) {
+        errorCode = ERR_PIPE;
+    } else {
+        while (!feof(_sender_fd)) {
+            // Passing to _receiver_buf
+            // Should I create a thread to keep listening this channel to pass
+            // to next command?
+        }
+    }
+    return errorCode;
 }
 
 /**
