@@ -24,16 +24,16 @@ date: 4/18/2020
 Actually, in x86, this `swap` instruction is named `xchg`.
 Then it will looks like:
 ```assembly=
-    ENTER_REGION:
-        mov REGISTER, 1b
-        xchg REGISTER, LOCK
-        cmp LOCK, 0b
-        jne ENTER_REGION
-        ret
+ENTER_REGION:
+    mov REGISTER, 1b
+    xchg REGISTER, LOCK
+    cmp LOCK, 0b
+    jne ENTER_REGION
+    ret
 
-    LEAVE_REGION:
-        mov LOCK, 0b
-        ret
+LEAVE_REGION:
+    mov LOCK, 0b
+    ret
 ```
 
 2. 
