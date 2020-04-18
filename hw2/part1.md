@@ -45,7 +45,7 @@ Let f(Q) be the function of CPU efficiency.
     Therefore the $f(Q) = {T \over T} = 100\%$
 
 * (b) $Q \gt T$
-    Well, $Q \gt T$ is $\in Q \ge T$
+    Well, $Q \gt T$ is $\subset Q \ge T$
     Hence there is also no context switching.
     Therefore the $f(Q) = {T \over T} = 100\%$ too
 
