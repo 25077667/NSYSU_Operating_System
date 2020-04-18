@@ -18,8 +18,6 @@ static int random_func()
 
 Philosopher::Philosopher(char _id) : id(_id), state("Confused") {}
 
-Philosopher::~Philosopher() {}
-
 void Philosopher::think()
 {
     this->state = string("Confused");
