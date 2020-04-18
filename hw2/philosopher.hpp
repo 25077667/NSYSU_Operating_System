@@ -7,7 +7,6 @@ class Philosopher
 {
 public:
     Philosopher(char);
-    ~Philosopher();
     void think();
     void eat();
     char id;
