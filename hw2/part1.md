@@ -21,7 +21,7 @@ date: 4/18/2020
         mov LOCK, 0
         ret
     ```
-Actually in x86, this `swap` instruction is named `xchg`.
+Actually, in x86, this `swap` instruction is named `xchg`.
 Then it will looks like:
 ```assembly=
     ENTER_REGION:
