@@ -80,7 +80,7 @@ B = 1
 C = 2
 D = 2
 ```
-Any order for this four lines. Because they will competition.
+Any order for this four lines. Because they will compete.
 But the different is:
 A and B raced by fork.
 C and D raced by thread.
