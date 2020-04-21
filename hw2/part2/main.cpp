@@ -14,14 +14,22 @@ void sitDown(vector<Philosopher> &philos,
 int main()
 {
     vector<Philosopher> philoPool;
-    vector<Semaphore> chopstickPool;
+
+    /**
+     * vector cannot contain mutex, because "vector requires that the values are
+     * movable".
+     * Just like the answaer below here:
+     * https://stackoverflow.com/questions/16465633/how-can-i-use-something-like-stdvectorstdmutex
+     *
+     * Could use std::unique_ptr<std::mutex> instead of std::mutex. unique_ptrs
+     * are movable.
+     */
     vector<unique_ptr<Semaphore>> chopPool;
 
     /* Init */
     for (int i = 0; i < PHILO_NUM; i++) {
         philoPool.push_back(Philosopher(i));
         chopPool.push_back(make_unique<Semaphore>());
-        // chopstickPool.push_back(Semaphore(1));
     }
     cout << "There is " << PHILO_NUM << " Philosophers." << endl;
 
@@ -34,7 +42,12 @@ int main()
     cout << "End of testing" << endl;
     return 0;
 }
-
+/**
+ * This function name is a joke, either the philosopher eat or think,
+ * they need to sit down first.
+ * Using a "TESTING_DURATION" to control the testing period, that is they must
+ * racing for several times.
+ */
 void sitDown(vector<Philosopher> &philos,
              vector<unique_ptr<Semaphore>> &chopstickPool)
 {

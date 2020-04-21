@@ -25,7 +25,6 @@ static void printStatus(const Philosopher philo, int t)
 {
     cout << "id: " << (int) philo.id << " due: " << t
          << " status: " << philo.state << endl;
-    fflush(stdout);
 }
 
 static void sleepAndGetInfo(const Philosopher p)
@@ -53,14 +52,20 @@ void Philosopher::eat()
 
 void Philosopher::useChop(vector<unique_ptr<Semaphore>> &chopPool)
 {
+    /* Show the waiting time to get chopsticks */
     auto start = chrono::steady_clock::now();
+
     chopPool.at(this->id).get()->wait();
     chopPool.at((this->id + 1) % PHILO_NUM).get()->wait();
+
     auto end = std::chrono::steady_clock::now();
     cout << (int) this->id << " takes "
          << chrono::duration<double>(end - start).count()
          << " second(s) for waiting chopsticks." << endl;
+
     eat();
+
+    /* After eat, should put chopsticks back, don't make it your own */
     chopPool.at(this->id).get()->notify();
     chopPool.at((this->id + 1) % PHILO_NUM).get()->notify();
 }
