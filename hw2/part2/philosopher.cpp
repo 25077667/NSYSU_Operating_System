@@ -1,4 +1,3 @@
-
 #include "philosopher.hpp"
 #include <unistd.h>
 #include <functional>
