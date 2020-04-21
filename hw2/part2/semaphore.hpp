@@ -5,9 +5,9 @@
 class Semaphore
 {
 public:
-    Semaphore(int);
-    inline void notify();
-    inline void wait();
+    Semaphore(int count_ = 1) : count(count_) {}
+    void notify();
+    void wait();
 
 private:
     std::mutex mtx;

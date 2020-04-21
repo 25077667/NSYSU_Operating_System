@@ -1,9 +1,15 @@
 #include "philosopher.hpp"
+
 #include <unistd.h>
+
+#include <chrono>
 #include <functional>
+#include <iostream>
 #include <random>
 #include <string>
+
 #include "semaphore.hpp"
+#define PHILO_NUM 5
 
 using namespace std;
 
@@ -11,8 +17,22 @@ static int random_func()
 {
     random_device rd;
     auto gen = mt19937_64(rd());
-    uniform_int_distribution<int> dis(0, 100);
+    uniform_int_distribution<int> dis(1, 101);
     return bind(dis, gen)();
+}
+
+static void printStatus(const Philosopher philo, int t)
+{
+    cout << "id: " << (int) philo.id << " eat: " << t
+         << " status: " << philo.state << endl;
+    fflush(stdout);
+}
+
+static void sleepAndGetInfo(const Philosopher p)
+{
+    auto t = random_func();
+    printStatus(p, t);
+    usleep(t);
 }
 
 Philosopher::Philosopher(char _id) : id(_id), state("Confused") {}
@@ -20,13 +40,37 @@ Philosopher::Philosopher(char _id) : id(_id), state("Confused") {}
 void Philosopher::think()
 {
     this->state = string("Confused");
-    usleep(random_func());
+    sleepAndGetInfo(*this);
     this->state = string("Hungry");
 }
 
 void Philosopher::eat()
 {
     this->state = string("Hungry");
-    usleep(random_func());
+    sleepAndGetInfo(*this);
     this->state = string("Confused");
+}
+
+void Philosopher::useChop(vector<unique_ptr<Semaphore>> &chopPool)
+{
+    auto start = chrono::steady_clock::now();
+    chopPool.at(this->id).get()->wait();
+    chopPool.at((this->id + 1) % PHILO_NUM).get()->wait();
+    auto end = std::chrono::steady_clock::now();
+    cout << this->id << " takes "
+         << chrono::duration<double>(end - start).count()
+         << " second(s) for waiting chopsticks." << endl;
+    eat();
+    chopPool.at(this->id).get()->notify();
+    chopPool.at((this->id + 1) % PHILO_NUM).get()->notify();
+}
+
+void lifeTime(Philosopher &p, vector<unique_ptr<Semaphore>> &chopPool)
+{
+    // In 1/3 probability to go to eat
+    bool isHungry = random_func() % 3;
+    if (isHungry)
+        p.useChop(chopPool);
+    else
+        p.think();
 }
