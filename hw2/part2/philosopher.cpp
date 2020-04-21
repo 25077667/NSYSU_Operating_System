@@ -23,7 +23,7 @@ static int random_func()
 
 static void printStatus(const Philosopher philo, int t)
 {
-    cout << "id: " << (int) philo.id << " eat: " << t
+    cout << "id: " << (int) philo.id << " due: " << t
          << " status: " << philo.state << endl;
     fflush(stdout);
 }
@@ -57,7 +57,7 @@ void Philosopher::useChop(vector<unique_ptr<Semaphore>> &chopPool)
     chopPool.at(this->id).get()->wait();
     chopPool.at((this->id + 1) % PHILO_NUM).get()->wait();
     auto end = std::chrono::steady_clock::now();
-    cout << this->id << " takes "
+    cout << (int) this->id << " takes "
          << chrono::duration<double>(end - start).count()
          << " second(s) for waiting chopsticks." << endl;
     eat();
@@ -67,7 +67,7 @@ void Philosopher::useChop(vector<unique_ptr<Semaphore>> &chopPool)
 
 void lifeTime(Philosopher &p, vector<unique_ptr<Semaphore>> &chopPool)
 {
-    // In 1/3 probability to go to eat
+    // In 2/3 probability to go to eat
     bool isHungry = random_func() % 3;
     if (isHungry)
         p.useChop(chopPool);

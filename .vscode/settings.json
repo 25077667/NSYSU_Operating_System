@@ -18,6 +18,7 @@
         "string": "cpp",
         "unordered_map": "cpp",
         "string_view": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "thread": "cpp"
     }
 }
