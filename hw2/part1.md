@@ -5,7 +5,7 @@ date: 4/18/2020
 ---
 ###### tags:OS2020Spring
 
-1. Yes
+1. Yes.
     Consider we have an instruction is "swap", can swap the contents of a register and a memory word in a single indivisible action.
     
     We can:
@@ -37,7 +37,7 @@ LEAVE_REGION:
 ```
 
 2. 
-Let f(Q) be the function of CPU efficiency.
+Let f(Q) be the function of measuring CPU efficiency.
 
 * (a) $\lim_{Q\to\infty} f(Q)$
     $Q \ge T, \forall T \in \mathbb{R}$
@@ -50,7 +50,7 @@ Let f(Q) be the function of CPU efficiency.
     Therefore the $f(Q) = {T \over T} = 100\%$ too
 
 * \(c\) $S \lt Q \lt T$
-    It will context switch, Hence the cost time is determined on the times of context switching.
+    It will context switch. Hence the executing time is determined on the times of context switching.
     The times of context switching is $m = \lfloor {T \over Q} \rfloor$
     Therefore the $f(Q) = {T \over {T + S * m}}$
 
@@ -58,10 +58,10 @@ Let f(Q) be the function of CPU efficiency.
     By previous conclusion, and let $Q = S$.
     $f(Q) = {T \over 2T} = {1 \over 2}$
 
-* (e) $\lim_{Q\to0} f(Q)$
-    By \(c\)'s conclusion, $\lim_{Q\to0} f(Q) = 0$
+* (e) $\lim_{Q\to 0} f(Q)$
+    By \(c\)'s conclusion, $\lim_{Q\to 0} f(Q) = 0$
 
-3. Any order of create.
+3. Any order of `pthread_create()`.
 
     For example:
     ```cpp=
@@ -81,19 +81,28 @@ C = 2
 D = 2
 ```
 Any order for this four lines. Because they will compete.
-But the different is:
-A and B raced by fork.
-C and D raced by thread.
-But before print "B = 1", must went to fork. That's cost time.
+
+But before print "B = 1", must went to `fork` again(Line 18). Be careful the `fork()` function is expensive. Printing "B = 1"(Line 20) will be executed behind the `fork`(Line 18).
 So, A has high probability goes before printing B.
 
 Consider the race in B, C and D.
-C and D are created by "pthread", which is also an expensive function call.
+C and D are created by `fork` too.
+But after forking this two process, they called "pthread", which is also an expensive function call.
 Hence, B has high probability goes before C and D.
 
 Good, then consider C and D.
-C and D are in the same process, but just competing in threads.
-We expect the probability of D goes before C is 50%.
+C and D are in the different process. Both C and D have their own thread.(Same function definition but in different process)
+The thread is created to increase the global variable called `value` then join the thread.
+After the thread join, print C and D.
+Therefore, C and D will compete by scheduler.
+
+Ok, A, B, C and D are competing by `fork`. But the costing time by function call is:
+A: fork
+B: fork + fork
+C: fork + fork + fork + thread
+D: fork + fork + fork + thread
+Hence, the expectation of these four process costing time before printing is:
+$E(A) < E(B) < E(C) = E(D)$
 
 But, If you are unfortunate, the schedular does not pick your process/thread up.
 Any order is possible.
