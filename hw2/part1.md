@@ -56,9 +56,12 @@ Let f(Q) be the function of measuring CPU efficiency.
     The times of context switching is $m = \lfloor {T \over Q} \rfloor$
     Therefore the $f(Q) = {T \over {T + S * m}}$
 
-* (d) $Q = S$
+* (d) $Q = S, \ Q \in \mathbb{R}$
+    * Consider $S = Q \lt T$:
     By previous conclusion, and let $Q = S$.
     $f(Q) = {T \over 2T} = {1 \over 2}$
+    * Consider $S = Q \gt T$:
+    The result is same as (a).
 
 * (e) $\lim_{Q\to 0} f(Q)$
     By \(c\)'s conclusion, $\lim_{Q\to 0} f(Q) = 0$
