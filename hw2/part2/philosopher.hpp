@@ -40,7 +40,4 @@ public:
  * Use random function to adjust the probability of eating.
  */
 void lifeTime(Philosopher &p, vector<unique_ptr<Semaphore>> &chopPool);
-/**
- * TODO: move lifeTime into Philosopher's member function.
- */
 #endif

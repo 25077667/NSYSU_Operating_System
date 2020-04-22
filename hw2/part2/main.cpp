@@ -53,9 +53,9 @@ void sitDown(vector<Philosopher> &philos,
 {
     // In some period keep testing
     for (auto start = chrono::steady_clock::now(),
-              end = std::chrono::steady_clock::now();
+              end = chrono::steady_clock::now();
          chrono::duration<double>(end - start).count() < TESTING_DURATION;
-         end = std::chrono::steady_clock::now()) {
+         end = chrono::steady_clock::now()) {
         vector<thread> t;
         for (auto &p : philos)
             t.push_back(thread(&lifeTime, ref(p), ref(chopstickPool)));
