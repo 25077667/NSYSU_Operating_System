@@ -88,16 +88,16 @@ D = 2
 Any order for this four lines. Because they will compete.
 
 But before print "B = 1", must went to `fork` again(Line 18). Be careful the `fork()` function is expensive. Printing "B = 1"(Line 20) will be executed behind the `fork`(Line 18).
-So, A has high probability goes before printing B.
+So, A has a high probability goes before printing B.
 
 Consider the race in B, C and D.
 C and D are created by `fork` too.
-But after forking this two process, they called "pthread", which is also an expensive function call.
-Hence, B has high probability goes before C and D.
+But after forking this two processes, they called "pthread", which is also an expensive function call.
+Hence, B has a high probability goes before C and D.
 
 Good, then consider C and D.
 C and D are in the different process. Both C and D have their own thread.(Same function definition but in different process)
-The thread is created to increase the global variable called `value` then join the thread.
+The thread is created to increase the global variable called `value` then `join` the thread.
 After the thread join, print C and D.
 Therefore, C and D will compete by scheduler.
 
@@ -109,5 +109,5 @@ D: fork + fork + fork + thread
 Hence, the expectation of these four process costing time before printing is:
 $E(A) < E(B) < E(C) = E(D)$
 
-But, If you are unfortunate, the schedular does not pick your process/thread up.
+But, If you are unfortunate, the schedular do not pick your process/thread up.
 Any order is possible.
