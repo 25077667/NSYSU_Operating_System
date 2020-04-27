@@ -10,12 +10,17 @@ date: 4/18/2020
 1. Yes.
     Consider we have an instruction is "swap", can swap the contents of a register and a memory word in a single indivisible action.
     
+    :::warning
+    Suppose the first process do clear the bit of `LOCK` after boot.
+    Or, there is no answer.
+    :::
+    
     We can:
     ```assembly=
     ENTER_REGION:
         mov REGISTER, 1
         swap REGISTER, LOCK
-        cmp LOCK, 0
+        cmp REGISTER, 0
         jne ENTER_REGION
         ret
 
@@ -29,7 +34,7 @@ Then it will looks like:
 ENTER_REGION:
     mov REGISTER, 1b
     xchg REGISTER, LOCK
-    cmp LOCK, 0b
+    cmp REGISTER, 0b
     jne ENTER_REGION
     ret
 
