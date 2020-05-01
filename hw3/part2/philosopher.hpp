@@ -2,13 +2,13 @@
 #define PHILOSOPHER_HPP
 #include <string>
 #include <vector>
+#define TESTING_DURATION_SEC 0.001
 
 #include "semaphore.hpp"
 using namespace std;
 
-class Philosopher
-{
-public:
+class Philosopher {
+   public:
     Philosopher(char);
 
     /**

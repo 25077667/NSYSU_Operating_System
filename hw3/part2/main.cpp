@@ -1,5 +1,6 @@
 #include <unistd.h>
 
+#include <iomanip>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -7,14 +8,14 @@
 #include "philosopher.hpp"
 #include "semaphore.hpp"
 #define PHILO_NUM 5
-#define TESTING_DURATION 0.001
 using namespace std;
 
 void sitDown(vector<Philosopher> &philos,
              vector<unique_ptr<Semaphore>> &chopstickPool);
 void monitor(vector<Philosopher> &philos, bool &state);
 
-int main() {
+int main()
+{
     vector<Philosopher> philoPool;
 
     /**
@@ -55,11 +56,12 @@ int main() {
  * racing for several times.
  */
 void sitDown(vector<Philosopher> &philos,
-             vector<unique_ptr<Semaphore>> &chopstickPool) {
+             vector<unique_ptr<Semaphore>> &chopstickPool)
+{
     // In some period keep testing
     for (auto start = chrono::steady_clock::now(),
               end = chrono::steady_clock::now();
-         chrono::duration<double>(end - start).count() < TESTING_DURATION;
+         chrono::duration<double>(end - start).count() < TESTING_DURATION_SEC;
          end = chrono::steady_clock::now()) {
         vector<thread> t;
         for (auto &p : philos)
@@ -69,11 +71,12 @@ void sitDown(vector<Philosopher> &philos,
     }
 }
 
-void monitor(vector<Philosopher> &philos, bool &state) {
+void monitor(vector<Philosopher> &philos, bool &state)
+{
     while (state) {
         for (auto i : philos)
-            cout << ((i.state == "Hungry") ? "H " : "C ");
+            cout << setw(10) << i.state << "\t";
         cout << endl;
-        usleep(20);
+        usleep(TESTING_DURATION_SEC * 20000);
     }
 }
