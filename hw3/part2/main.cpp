@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -10,9 +12,9 @@ using namespace std;
 
 void sitDown(vector<Philosopher> &philos,
              vector<unique_ptr<Semaphore>> &chopstickPool);
+void monitor(vector<Philosopher> &philos, bool &state);
 
-int main()
-{
+int main() {
     vector<Philosopher> philoPool;
 
     /**
@@ -25,6 +27,7 @@ int main()
      * are movable.
      */
     vector<unique_ptr<Semaphore>> chopPool;
+    bool state = true;
 
     /* Init */
     for (int i = 0; i < PHILO_NUM; i++) {
@@ -32,12 +35,15 @@ int main()
         chopPool.push_back(make_unique<Semaphore>());
     }
     cout << "There is " << PHILO_NUM << " Philosophers." << endl;
+    auto _monitor = thread(&monitor, ref(philoPool), ref(state));
 
     for (int i = 0; i < 2 * PHILO_NUM; i++) {
         fflush(stdout);
         cout << "========== In " << i << "th testing ==========" << endl;
         sitDown(philoPool, chopPool);
     }
+    state = false;
+    _monitor.join();
 
     cout << "End of testing" << endl;
     return 0;
@@ -49,8 +55,7 @@ int main()
  * racing for several times.
  */
 void sitDown(vector<Philosopher> &philos,
-             vector<unique_ptr<Semaphore>> &chopstickPool)
-{
+             vector<unique_ptr<Semaphore>> &chopstickPool) {
     // In some period keep testing
     for (auto start = chrono::steady_clock::now(),
               end = chrono::steady_clock::now();
@@ -61,5 +66,14 @@ void sitDown(vector<Philosopher> &philos,
             t.push_back(thread(&lifeTime, ref(p), ref(chopstickPool)));
         for (auto &i : t)
             i.join();
+    }
+}
+
+void monitor(vector<Philosopher> &philos, bool &state) {
+    while (state) {
+        for (auto i : philos)
+            cout << ((i.state == "Hungry") ? "H " : "C ");
+        cout << endl;
+        usleep(20);
     }
 }
