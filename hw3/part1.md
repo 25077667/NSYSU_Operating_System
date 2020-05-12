@@ -11,7 +11,7 @@ This homework in [Hackmd Link](https://hackmd.io/@25077667/By8upiLcL)
 1. Explain what memory-mapped I/O is and how it works.
 
     * What is MMI/O?
-        A method to mapping an I/O port to a process's virtual memory space. If the file(devices will be treated as a file) uses memory-mapped I/O then you can write to the specific memory address(mapped by MMI/O) and the file will be updated with the new data.
+        A method for mapping an I/O port to a process's virtual memory space. If the file (devices will be treated as a file) uses memory-mapped I/O then you can write to the specific memory address (mapped by MMI/O) and the file will be updated with the new data.
 
         A picture:
         ![example](https://images2017.cnblogs.com/blog/1094457/201710/1094457-20171019111628396-1048214045.png)
@@ -58,9 +58,9 @@ This homework in [Hackmd Link](https://hackmd.io/@25077667/By8upiLcL)
 |  $P_4$  |     1      |    5     |
 |  $P_5$  |     6      |    2     |
 
-The processes are assumed to have arrived in the order $P_1 , P_2 , P_3 , P_4 , P_5$ , all at time $0$.
+The processes are assumed to have arrived in the order $P_1 , P_2 , P_3 , P_4 , P_5$, all at time $0$.
 <!-- In this Answer's discription uses Mermaid -->
-<!-- Strongly suggest use the HackMD to view this markdown -->
+<!-- Strongly suggest using the HackMD to view this markdown -->
 (a) Suppose there is no context switching
 ```mermaid
 gantt
