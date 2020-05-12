@@ -8,47 +8,47 @@ date: 5/11/2020
 This homework in [Hackmd Link](https://hackmd.io/@25077667/By8upiLcL)
 ---
 
-1. Explain what memory-mapped I/O is and how it works.
+# 1. Explain what memory-mapped I/O is and how it works.
 
-    * What is MMI/O?
-        A method for mapping an I/O port to a process's virtual memory space. If the file (devices will be treated as a file) uses memory-mapped I/O then you can write to the specific memory address (mapped by MMI/O) and the file will be updated with the new data.
+* What is MMI/O?
+    A method for mapping an I/O port to a process's virtual memory space. If the file (devices will be treated as a file) uses memory-mapped I/O then you can write to the specific memory address (mapped by MMI/O) and the file will be updated with the new data.
 
-        A picture:
-        ![example](https://images2017.cnblogs.com/blog/1094457/201710/1094457-20171019111628396-1048214045.png)
+    A picture:
+    ![example](https://images2017.cnblogs.com/blog/1094457/201710/1094457-20171019111628396-1048214045.png)
 
-    * How it works?
-        In Linux, the kernel will use `ioremap()` to map bus memory into CPU space, then the user space process uses `mmap()` mapping the device memory space form kernel to the user process's memory space.
-        And the `ioremap()` is defined in `mm/ioremap.c`:
-        `void __iomem *ioremap(resource_size_t phys_addr, unsigned long size)`
-        https://github.com/torvalds/linux/blob/master/arch/x86/mm/ioremap.c#L324
+* How it works?
+    In Linux, the kernel will use `ioremap()` to map bus memory into CPU space, then the user space process uses `mmap()` mapping the device memory space form kernel to the user process's memory space.
+    And the `ioremap()` is defined in `mm/ioremap.c`:
+    `void __iomem *ioremap(resource_size_t phys_addr, unsigned long size)`
+    https://github.com/torvalds/linux/blob/master/arch/x86/mm/ioremap.c#L324
 
-        For example: [Generic driver for memory-mapped GPIO controllers](https://elixir.bootlin.com/linux/latest/source/drivers/gpio/gpio-mmio.c)
+    For example: [Generic driver for memory-mapped GPIO controllers](https://elixir.bootlin.com/linux/latest/source/drivers/gpio/gpio-mmio.c)
     
-2. Explain what DMA is and how it works.
-    * What is DMA?
-        A feature of computer systems that allows certain hardware subsystems to access main system memory, independent of the CPUs. Without DMA, when the CPU is using programmed input/output, it is typically fully occupied for the entire duration of the read or write operation, and is thus unavailable to perform other work. With DMA, the CPU first initiates the transfer, then it does other operations while the transfer is in progress, and it finally receives an interrupt from the DMA controller (DMAC) when the operation is done.
+# 2. Explain what DMA is and how it works.
+* What is DMA?
+    A feature of computer systems that allows certain hardware subsystems to access main system memory, independent of the CPUs. Without DMA, when the CPU is using programmed input/output, it is typically fully occupied for the entire duration of the read or write operation, and is thus unavailable to perform other work. With DMA, the CPU first initiates the transfer, then it does other operations while the transfer is in progress, and it finally receives an interrupt from the DMA controller (DMAC) when the operation is done.
 
-    * How it works?
-        Take easy way to explain by pictures:
-        ![](https://i.imgur.com/RamzoKb.png)
-        ![](https://i.imgur.com/ygctD4O.png)
-        ![](https://i.imgur.com/kqf1ZMg.png)
-        [ref](https://archive.eettaiwan.com/www.eettaiwan.com/ART_8800468608_628626_TA_c61e2b68.HTM)
+* How it works?
+    Take easy way to explain by pictures:
+    ![](https://i.imgur.com/RamzoKb.png)
+    ![](https://i.imgur.com/ygctD4O.png)
+    ![](https://i.imgur.com/kqf1ZMg.png)
+    [ref](https://archive.eettaiwan.com/www.eettaiwan.com/ART_8800468608_628626_TA_c61e2b68.HTM)
 
-        Or, there is a big issue about DMA.
-        The source code of DMA in Linux: [GitHub](https://github.com/torvalds/linux/blob/master/include/linux/dma-mapping.h)
-        For example: 
-        * Dealing with difficult hardware
-        * Coherent DMA mappings, streaming DMA mappings
-        * DMA pools(Allocation pools for DMAable (coherent) memory)
-        * Single-page streaming mappings
-        * Scatter/gather mappings
-        * PCI double-address cycle mappings
-        * DMA for ISA Devices
-        * ==And so on==...
-        [More reference](https://www.oreilly.com/library/view/linux-device-drivers/0596005903/ch15.html)
+    Or, there is a big issue about DMA.
+    The source code of DMA in Linux: [GitHub](https://github.com/torvalds/linux/blob/master/include/linux/dma-mapping.h)
+    For example: 
+    * Dealing with difficult hardware
+    * Coherent DMA mappings, streaming DMA mappings
+    * DMA pools(Allocation pools for DMAable (coherent) memory)
+    * Single-page streaming mappings
+    * Scatter/gather mappings
+    * PCI double-address cycle mappings
+    * DMA for ISA Devices
+    * ==And so on==...
+    [More reference](https://www.oreilly.com/library/view/linux-device-drivers/0596005903/ch15.html)
     
-3. Consider the following set of processes, with the length of the CPU-burst time given in milliseconds:
+# 3. Consider the following set of processes, with the length of the CPU-burst time given in milliseconds:
 
 | Process | Burst Time | Priority |
 |:-------:|:----------:|:--------:|
@@ -133,8 +133,7 @@ gantt
 Is "SJF", the total waiting time over all processes is 17.
 
 
-
-4. A UNIX process has two parts—the user part and the kernel part. Is the kernel part like a subroutine and a coroutine? Why?
+# 4. A UNIX process has two parts—the user part and the kernel part. Is the kernel part like a subroutine and a coroutine? Why?
 
 Well, I think it is like a subroutine procedure.
 The process in the user space invokes the kernel space, the kernel space starts out in the same place.
