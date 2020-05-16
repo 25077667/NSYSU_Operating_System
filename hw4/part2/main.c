@@ -14,13 +14,13 @@ typedef struct list {
 
 void push_back(List *l, Obj *o)
 {
-    if (unlikely(l))
+    if (!l)
         return;
 
-    Obj *newTail = mymalloc(sizeof(o));
-    if (unlikely(newTail))
+    Obj *newTail = mymalloc(sizeof(Obj));
+    if (!newTail)
         return;
-    memcpy(newTail, o, sizeof(*o));
+    memcpy(newTail, o, sizeof(Obj));
 
     if (l->tail)
         l->tail->next = newTail;
@@ -45,7 +45,7 @@ int main()
     Obj *obj = mymalloc(sizeof(Obj));
     List *list = mymalloc(sizeof(List));
 
-    printf("%lu %lu\n", obj->data, list);
+    // printf("%lu %lu\n", obj->data, list);
 
     for (int i = 0; i < 100; i++) {
         obj->data = i;
