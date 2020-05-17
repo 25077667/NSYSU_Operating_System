@@ -10,7 +10,7 @@ typedef struct _queue {
     BaseBlock *ready;
 } Queue;
 
-static Queue q_manager;
+Queue q_manager;
 
 /**
  * This function has 2 modes:
@@ -54,7 +54,7 @@ void *mymalloc(size_t size)
     }
     newBlock->next = q_manager.using;
     q_manager.using = newBlock;
-    return (&q_manager.using) + sizeof(BaseBlock);
+    return q_manager.using + sizeof(BaseBlock);
 }
 
 void myfree(void *ptr)
@@ -108,4 +108,24 @@ void cleanAll()
         q_manager.using = tmp->next;
         free(tmp);
     }
+}
+
+void printMallocSpace()
+{
+    unsigned int total_alloced = 0;
+    if (likely(q_manager.using) || likely(q_manager.ready)) {
+        printf("Readly Queue: ");
+        for (BaseBlock *tmp = q_manager.ready; tmp && ++total_alloced;
+             tmp = tmp->next)
+            printf("%p -> ", tmp);
+
+        printf("\nUsing Queue: ");
+        for (BaseBlock *tmp = q_manager.using; tmp && ++total_alloced;
+             tmp = tmp->next)
+            printf("%p -> ", tmp);
+        printf("\n");
+    } else {
+        printf("The malloc space is empty now.\n");
+    }
+    printf("Total allocated: %u\n", total_alloced);
 }

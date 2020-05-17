@@ -19,4 +19,7 @@ void *mycalloc(size_t nmemb, size_t size);
 
 /* To prevent memory leak */
 void cleanAll();
+
+/* Graphical printing mymalloc linking state */
+void printMallocSpace();
 #endif

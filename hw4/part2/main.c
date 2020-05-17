@@ -21,6 +21,7 @@ void push_back(List *l, Obj *o)
     if (!newTail)
         return;
     memcpy(newTail, o, sizeof(Obj));
+    newTail->next = NULL;
 
     if (l->tail)
         l->tail->next = newTail;
@@ -45,12 +46,13 @@ int main()
     Obj *obj = mymalloc(sizeof(Obj));
     List *list = mymalloc(sizeof(List));
 
-    // printf("%lu %lu\n", obj->data, list);
-
     for (int i = 0; i < 100; i++) {
         obj->data = i;
         push_back(list, obj);
+        // printf("%d ", i);
     }
+    printf("AAAAAAAA");
+    // printMallocSpace();
     for (Obj *curr = list->head; curr; curr = curr->next)
         printf("%d ", curr->data);
 
