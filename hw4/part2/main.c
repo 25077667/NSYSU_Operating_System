@@ -45,17 +45,17 @@ int main()
 {
     Obj *obj = mymalloc(sizeof(Obj));
     List *list = mymalloc(sizeof(List));
+    list->head = list->tail = NULL;
+    list->size = 0;
 
     for (int i = 0; i < 100; i++) {
         obj->data = i;
         push_back(list, obj);
-        // printf("%d ", i);
     }
-    printf("AAAAAAAA");
     // printMallocSpace();
     for (Obj *curr = list->head; curr; curr = curr->next)
         printf("%d ", curr->data);
-
+    printf("\n");
     for (int i = 0; i < 100; i++)
         pop_front(list);
 
