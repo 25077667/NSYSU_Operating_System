@@ -12,6 +12,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void *mymalloc(size_t size);
 void myfree(void *ptr);
 void *myrealloc(void *ptr, size_t size);
@@ -22,4 +26,9 @@ void cleanAll();
 
 /* Graphical printing mymalloc linking state */
 void printMallocSpace();
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
