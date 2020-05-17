@@ -54,13 +54,13 @@ void *mymalloc(size_t size)
     }
     newBlock->next = q_manager.using;
     q_manager.using = newBlock;
-    return q_manager.using + sizeof(BaseBlock);
+    return q_manager.using + 1;
 }
 
 void myfree(void *ptr)
 {
     if (likely(ptr)) {
-        BaseBlock *toBeFreed = ptr - sizeof(size_t) - sizeof(void *);
+        BaseBlock *toBeFreed = ptr - 1;
         BaseBlock *beFreed =
             remove_queue_node(&(q_manager.using), toBeFreed, 0);
         assert(toBeFreed == beFreed);
@@ -74,7 +74,7 @@ void *myrealloc(void *ptr, size_t size)
     if (unlikely(ptr))
         return mymalloc(size);
 
-    BaseBlock *origin_block = ptr - sizeof(BaseBlock);
+    BaseBlock *origin_block = ptr - 1;
     if (size > origin_block->size) {
         BaseBlock *newBlock = mymalloc(size);
         if (unlikely(newBlock)) {
@@ -101,12 +101,12 @@ void cleanAll()
     while (q_manager.ready) {
         BaseBlock *tmp = q_manager.ready;
         q_manager.ready = tmp->next;
-        free(tmp);
+        sbrk(-tmp->size);
     }
     while (q_manager.using) {
         BaseBlock *tmp = q_manager.using;
         q_manager.using = tmp->next;
-        free(tmp);
+        sbrk(-tmp->size);
     }
 }
 
