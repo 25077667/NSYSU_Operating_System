@@ -5,11 +5,13 @@ OUT = part2.elf
 
 dep: 
 	$(CC) $(CFLAGS) -c mm.c
-	g++ $(CPPFLAGS) test.cpp -fPIC -rdynamic -shared -Wl,-soname,libtest.so -o libtest.so
-	$(CC) $(CFLAGS) -c  main.c
+	# g++ $(CPPFLAGS) test.cpp -fPIC -rdynamic -shared -Wl,-soname,libtest.so -o libtest.so
+	$(CC) $(CFLAGS) -c test.c
+	$(CC) $(CFLAGS) -c main.c
 
 all: dep
-	$(CC) $(CFLAGS) *.o -o $(OUT) -ldl
+	#g++ $(CPPFLAGS) *.o -o $(OUT)
+	$(CC) $(CFLAGS) *.o -o $(OUT)
 
 clean:
 	rm -f $(OUT) *.o .gdb_history peda-session-* *.so

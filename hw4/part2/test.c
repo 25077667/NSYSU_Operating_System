@@ -1,22 +1,18 @@
-#include "test.hpp"
+#include "test.h"
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-#ifdef __cplusplus
-extern "C" {
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "mm.h"
-}
-#endif
+#define testTypes 5
 
 void push_back(List *l, Obj *o)
 {
-    if (unlikely(l))
+    if (!(l))
         return;
 
     Obj *newTail = (Obj *) mymalloc(sizeof(Obj));
-    if (unlikely(newTail))
+    if (!(newTail))
         return;
     memcpy(newTail, o, sizeof(Obj));
     newTail->next = NULL;
@@ -31,7 +27,7 @@ void push_back(List *l, Obj *o)
 
 void pop_front(List *l)
 {
-    if (unlikely(l) || unlikely(l->head))
+    if (!l || !l->head)
         return;
     Obj *tmp = l->head;
     l->head = l->head->next;
@@ -42,32 +38,24 @@ void pop_front(List *l)
 int testStruct(int viewTesting)
 {
     int i;
-    int result = true;
+    int result = 0;
     Obj *obj = (Obj *) mymalloc(sizeof(Obj));
     List *list = (List *) mymalloc(sizeof(List));
     list->head = list->tail = NULL;
     list->size = 0;
 
-    std::vector<int> correct_table;
-
     for (i = 0; i < 100; i++) {
         obj->data = i;
         push_back(list, obj);
-        correct_table.push_back(i);
     }
 
     i = 0;
     for (Obj *curr = list->head; curr; curr = curr->next) {
         /* View test */
         if (viewTesting)
-            std::cout << curr->data << " " << correct_table.at(i++)
-                      << std::endl;
-
+            printf("%d %d\n", curr->data, i);
+        result += (curr->data == i++);
         /* check answer */
-        if (curr->data != correct_table.at(i)) {
-            result = false;
-            break;
-        }
     }
 
     for (i = 0; i < 100; i++)
@@ -78,10 +66,15 @@ int testStruct(int viewTesting)
 
 void testAll(int viewTesting)
 {
-    std::map<std::string, int> result;
+    struct Result {
+        char *topic;
+        int value;
+    } result[testTypes] = {
+        {.topic = "Struct", .value = 0}, {.topic = "Struct", .value = 0},
+        {.topic = "Struct", .value = 0}, {.topic = "Struct", .value = 0},
+        {.topic = "Struct", .value = 0},
+    };
 
-    result["Struct"] = testStruct(viewTesting);
-
-    for (auto i : result)
-        std::cout << i.first << "\t" << i.second << std::endl;
+    result[0].value = testStruct(viewTesting);
+    printf("%d\n", result[0].value);
 }

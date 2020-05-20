@@ -28,14 +28,14 @@ static void *remove_queue_node(BaseBlock **indirect,
 {
     /* size mode */
     BaseBlock *current = NULL;
-    while (unlikely(target) && (*indirect)->size < size) {
+    while (!(target) && (*indirect)->size < size) {
         current = (*indirect);
         indirect = &(*indirect)->next;
     }
     target = ((size) ? current : target);
 
     /* target mode */
-    while (unlikely(size) && *indirect != target)
+    while (!(size) && *indirect != target)
         indirect = &(*indirect)->next;
     *indirect = ((target) ? target->next : (*indirect));
     return target;
@@ -71,13 +71,13 @@ void myfree(void *ptr)
 
 void *myrealloc(void *ptr, size_t size)
 {
-    if (unlikely(ptr))
+    if (!(ptr))
         return mymalloc(size);
 
     BaseBlock *origin_block = ptr - 1;
     if (size > origin_block->size) {
         BaseBlock *newBlock = mymalloc(size);
-        if (unlikely(newBlock)) {
+        if (!(newBlock)) {
             memcpy(newBlock, origin_block, origin_block->size);
             myfree(ptr);
             return newBlock;

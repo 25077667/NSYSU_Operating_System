@@ -1,33 +1,20 @@
-#include <dlfcn.h>
 #include <stdio.h>
 
 #include "mm.h"
+#include "test.h"
 
 #define CHECK_Y(x) ((x) == 'y' || (x) == 'Y')
 
+
 int main()
 {
-    /* Prepare share library */
-    void *testLib = dlopen("libtest.so", RTLD_LAZY);
-    if (!testLib) {
-        fputs(dlerror(), stderr);
-        exit(1);
-    }
-    void (*testAll)(int);
-
-    /* Clean the allocated spaces */
     char viewResult;
     printf("Do you want to see test result[Y/n]: ");
+    scanf("%c", &viewResult);
 
-    do {
-    } while (scanf("%c", &viewResult) == 0);
+    testAll(CHECK_Y(viewResult));
 
-    testAll = (void (*)()) dlsym(testLib, "testAll");
-
-    if (testAll)
-        testAll(CHECK_Y(viewResult));
-
-    dlclose(testLib);
+    /* Clean the allocated spaces */
     cleanAll();
     return 0;
 }

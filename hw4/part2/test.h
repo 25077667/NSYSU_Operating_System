@@ -1,8 +1,6 @@
-#ifndef TEST_HPP
-#define TEST_HPP
+#ifndef TEST_H
+#define TEST_H
 #include <stddef.h>
-
-#include "mm.h"
 
 typedef struct obj {
     struct obj *next;
@@ -13,10 +11,6 @@ typedef struct list {
     Obj *head, *tail;
     int size;
 } List;
-
-void push_back(List *l, Obj *o);
-
-void pop_front(List *l);
 
 void testAll(int viewTesting);
 
