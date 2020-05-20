@@ -2,8 +2,8 @@
 #define __MY_MM_H_INCLUDED__
 
 /* A macro that in GCC to optimize for branch prediction */
-#define unlikely(x) __builtin_expect(!!(x), 0)
 #define likely(x) __builtin_expect(!!(x), 1)
+/* Well, move unlikely while non-nesserary */
 
 #include <assert.h>
 #include <stddef.h>
@@ -11,10 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void *mymalloc(size_t size);
 void myfree(void *ptr);
@@ -26,9 +22,5 @@ void cleanAll();
 
 /* Graphical printing mymalloc linking state */
 void printMallocSpace();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
