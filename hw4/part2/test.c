@@ -84,7 +84,8 @@ int testInt(int viewTesting)
     int result = 0;
     for (int testTimes = 0; testTimes < 10; testTimes++) {
         for (int i = 0; i < 10; i++) {
-            int *int_ptr = mycalloc(1, sizeof(int));
+            bool *bool_ptr = mymalloc(sizeof(bool));
+            int *int_ptr = myrealloc(bool_ptr, sizeof(int));
 
             TESTALLOCSUCCESS(int_ptr);
 
