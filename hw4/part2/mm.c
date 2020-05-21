@@ -88,23 +88,26 @@ void *myrealloc(void *ptr, size_t size)
         return mymalloc(size);
 
     BaseBlock *origin_block = ptr - sizeof(BaseBlock);
-    if (size > origin_block->size) {
-        BaseBlock *newBlock = mymalloc(size);
-        if (!(newBlock)) {
-            memcpy(newBlock, origin_block, origin_block->size);
-            myfree(ptr);
-            return newBlock;
-        } else
-            return NULL;
-    } else
+
+    /* The origin space is enough to extand to request */
+    if (size <= origin_block->size)
         return ptr;
+
+    /* Try malloc new space, and mount old to ready chain */
+    BaseBlock *newBlock = mymalloc(size);
+    if (newBlock) {
+        memcpy(newBlock, origin_block, origin_block->size);
+        myfree(ptr);
+    }
+    return newBlock;
 }
 
+/* malloc and clear */
 void *mycalloc(size_t nmemb, size_t size)
 {
     size_t total_size = nmemb * size;
     void *newBlock = mymalloc(total_size);
-    if (likely(newBlock))
+    if ((newBlock))
         memset(newBlock, 0, total_size);
     return newBlock;
 }
