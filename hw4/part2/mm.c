@@ -10,6 +10,14 @@ typedef struct _queue {
     BaseBlock *ready;
 } Queue;
 
+/*
+ * A memory pool that using linked-list to link all allocated and freed spaces.
+ *
+ * @using: Contain all the user allocation object in this linked-list.
+ *
+ * @ready: Contain all the user freed space which had been allocated, also is a
+ *         linked-list.
+ */
 Queue q_manager;
 
 /**
@@ -48,10 +56,12 @@ static void *remove_queue_node(BaseBlock **indirect,
 
 void *mymalloc(size_t size)
 {
+    /* Check the ready space have a space allocated */
     BaseBlock *newBlock = remove_queue_node(&(q_manager.ready), NULL, size);
     if (!newBlock) {
         newBlock = (BaseBlock *) sbrk(0);
         void *request = sbrk(size + sizeof(BaseBlock));
+        /* Allocate failed! */
         if (request == (void *) -1)
             return NULL;
         newBlock->size = size;
