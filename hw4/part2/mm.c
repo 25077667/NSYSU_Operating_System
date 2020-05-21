@@ -26,8 +26,12 @@ static void *remove_queue_node(BaseBlock **indirect,
                                BaseBlock *target,
                                size_t size)
 {
+    /* The indirect (linked-list) is not exist */
+    if (!(*indirect))
+        return NULL;
+
     /* size mode */
-    BaseBlock *current = NULL;
+    BaseBlock *current = (*indirect);
     while (!(target) && (*indirect)->size < size) {
         current = (*indirect);
         indirect = &(*indirect)->next;
@@ -37,6 +41,7 @@ static void *remove_queue_node(BaseBlock **indirect,
     /* target mode */
     while (!(size) && *indirect != target)
         indirect = &(*indirect)->next;
+
     *indirect = ((target) ? target->next : (*indirect));
     return target;
 }
@@ -47,7 +52,6 @@ void *mymalloc(size_t size)
     if (!newBlock) {
         newBlock = (BaseBlock *) sbrk(0);
         void *request = sbrk(size + sizeof(BaseBlock));
-        assert(request == (void *) newBlock);
         if (request == (void *) -1)
             return NULL;
         newBlock->size = size;
@@ -60,10 +64,9 @@ void *mymalloc(size_t size)
 void myfree(void *ptr)
 {
     if (likely(ptr)) {
-        BaseBlock *toBeFreed = ptr - 1;
+        BaseBlock *toBeFreed = ptr - sizeof(BaseBlock);
         BaseBlock *beFreed =
             remove_queue_node(&(q_manager.using), toBeFreed, 0);
-        assert(toBeFreed == beFreed);
         beFreed->next = q_manager.ready;
         q_manager.ready = beFreed;
     }
@@ -74,7 +77,7 @@ void *myrealloc(void *ptr, size_t size)
     if (!(ptr))
         return mymalloc(size);
 
-    BaseBlock *origin_block = ptr - 1;
+    BaseBlock *origin_block = ptr - sizeof(BaseBlock);
     if (size > origin_block->size) {
         BaseBlock *newBlock = mymalloc(size);
         if (!(newBlock)) {

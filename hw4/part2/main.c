@@ -10,7 +10,7 @@ int main()
 {
     char viewResult;
     printf("Do you want to see test result[Y/n]: ");
-    scanf("%c", &viewResult);
+    viewResult = getchar();
 
     testAll(CHECK_Y(viewResult));
 
