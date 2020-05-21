@@ -39,8 +39,8 @@ static void *remove_queue_node(BaseBlock **indirect,
         return NULL;
 
     /* size mode */
-    BaseBlock *current = (*indirect);
-    while (!(target) && (*indirect)->size < size) {
+    BaseBlock *current = (((*indirect)->size) >= size) ? (*indirect) : NULL;
+    while (!(target) && (*indirect) && (*indirect)->size < size) {
         current = (*indirect);
         indirect = &(*indirect)->next;
     }
@@ -94,8 +94,9 @@ void *myrealloc(void *ptr, size_t size)
         return ptr;
 
     /* Try malloc new space, and mount old to ready chain */
-    BaseBlock *newBlock = mymalloc(size);
+    BaseBlock *newBlock = mymalloc(size + sizeof(BaseBlock));
     if (newBlock) {
+        memset(newBlock, 0, size);
         memcpy(newBlock, origin_block, origin_block->size);
         myfree(ptr);
     }
@@ -133,12 +134,12 @@ void printMallocSpace()
         printf("Readly Queue: ");
         for (BaseBlock *tmp = q_manager.ready; tmp && ++total_alloced;
              tmp = tmp->next)
-            printf("%p -> ", tmp);
+            printf("%p[%ld] -> ", tmp, tmp->size);
 
         printf("\nUsing Queue: ");
         for (BaseBlock *tmp = q_manager.using; tmp && ++total_alloced;
              tmp = tmp->next)
-            printf("%p -> ", tmp);
+            printf("%p[%ld] -> ", tmp, tmp->size);
         printf("\n");
     } else {
         printf("The malloc space is empty now.\n");

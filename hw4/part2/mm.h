@@ -5,7 +5,6 @@
 #define likely(x) __builtin_expect(!!(x), 1)
 /* Well, move unlikely while non-nesserary */
 
-#include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
