@@ -39,12 +39,9 @@ static void *remove_queue_node(BaseBlock **indirect,
         return NULL;
 
     /* size mode */
-    BaseBlock *current = (((*indirect)->size) >= size) ? (*indirect) : NULL;
-    while (!(target) && (*indirect) && (*indirect)->size < size) {
-        current = (*indirect);
+    while (!(target) && (*indirect) && (*indirect)->size < size)
         indirect = &(*indirect)->next;
-    }
-    target = ((size) ? current : target);
+    target = ((size) ? (*indirect) : target);
 
     /* target mode */
     while (!(size) && *indirect != target)
