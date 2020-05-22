@@ -16,7 +16,9 @@ void testAll(int viewTesting);
 
 /* Test cases*/
 int testStruct(int viewTesting);
-int testClass(int viewTesting);
+int testInt(int viewTesting);
+int testBool(int viewTesting);
+int testPtr(int viewTesting);
 int testString(int viewTesting);
 
 /* The full of memory case */
