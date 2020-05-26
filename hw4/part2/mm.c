@@ -97,7 +97,7 @@ void *myrealloc(void *ptr, size_t size)
         return ptr;
 
     /* Try malloc new space, and mount old to freeList chain */
-    BaseBlock *newBlock = mymalloc(size + sizeof(BaseBlock));
+    void *newBlock = mymalloc(size + sizeof(BaseBlock));
     if (newBlock) {
         memset(newBlock, 0, size);
         memcpy(newBlock, origin_block, origin_block->size);
@@ -111,11 +111,18 @@ void *mycalloc(size_t nmemb, size_t size)
 {
     size_t total_size = nmemb * size;
     void *newBlock = mymalloc(total_size);
-    if ((newBlock))
+    if (newBlock)
         memset(newBlock, 0, total_size);
     return newBlock;
 }
 
+/**
+ * Display allocation infomation about mm.h.
+ *
+ * Display format:
+ *  address[size] -> address[size] -> address[size] -> ...  address[size] ->
+ * @total_alloced: the numbers of blocks(not the size).
+ */
 void printMallocSpace()
 {
     unsigned int total_alloced = 0;
