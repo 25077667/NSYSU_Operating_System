@@ -18,7 +18,7 @@ typedef struct _queue {
  * @ready: Contain all the user freed space which had been allocated, also is a
  *         linked-list.
  */
-Queue q_manager;
+static Queue q_manager;
 
 /**
  * This function has 2 modes:
@@ -58,7 +58,7 @@ void *mymalloc(size_t size)
     if (!newBlock) {
         newBlock = (BaseBlock *) sbrk(0);
         void *request = sbrk(size + sizeof(BaseBlock));
-        /* Allocate failed! */
+        /* Allocation failed! */
         if (request == (void *) -1)
             return NULL;
         newBlock->size = size;
@@ -108,20 +108,6 @@ void *mycalloc(size_t nmemb, size_t size)
     if ((newBlock))
         memset(newBlock, 0, total_size);
     return newBlock;
-}
-
-void cleanAll()
-{
-    while (q_manager.ready) {
-        BaseBlock *tmp = q_manager.ready;
-        q_manager.ready = tmp->next;
-        sbrk(-tmp->size);
-    }
-    while (q_manager.using) {
-        BaseBlock *tmp = q_manager.using;
-        q_manager.using = tmp->next;
-        sbrk(-tmp->size);
-    }
 }
 
 void printMallocSpace()
