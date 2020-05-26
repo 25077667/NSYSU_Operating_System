@@ -3,11 +3,8 @@
 
 /* A macro that in GCC to optimize for branch prediction */
 #define likely(x) __builtin_expect(!!(x), 1)
-/* Well, move unlikely while non-nesserary */
 
-#include <stddef.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -16,8 +13,10 @@ void myfree(void *ptr);
 void *myrealloc(void *ptr, size_t size);
 void *mycalloc(size_t nmemb, size_t size);
 
-/* To prevent memory leak */
-void cleanAll();
+/*
+ * `sbrk()` will auto free, while the process exit
+ * Might freed by `_start()`, actually I don't know how it be freed.
+ */
 
 /* Graphical printing mymalloc linking state */
 void printMallocSpace();

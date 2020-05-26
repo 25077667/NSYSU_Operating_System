@@ -1,9 +1,5 @@
 #include "test.h"
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #include "mm.h"
 #define TEST_TYPES 6
 #define TEST_TIMES 10
@@ -170,7 +166,7 @@ int testString(int viewTesting)
     int result = 0;
     FOR_TEST
     for (int i = 0; i < 10; i++) {
-        char *str = mycalloc(strlen(test_str), sizeof(char));
+        char *str = mycalloc(strlen(test_str) + 1, sizeof(char));
 
         TESTALLOCSUCCESS(str);
 
