@@ -1,10 +1,7 @@
-#include <stdio.h>
-
 #include "mm.h"
 #include "test.h"
 
 #define CHECK_Y(x) ((x) == 'y' || (x) == 'Y')
-
 
 int main()
 {
@@ -14,7 +11,5 @@ int main()
 
     testAll(CHECK_Y(viewResult));
 
-    /* Clean the allocated spaces */
-    cleanAll();
     return 0;
 }
