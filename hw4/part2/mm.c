@@ -7,16 +7,22 @@ typedef struct _baseBlock {
 
 typedef struct _queue {
     BaseBlock *using;
-    BaseBlock *ready;
+    BaseBlock *freeList;
 } Queue;
 
 /*
  * A memory pool that using linked-list to link all allocated and freed spaces.
  *
  * @using: Contain all the user allocation object in this linked-list.
+ *      + Why I need to record using space?
+ *          Actually, it's just a record to make "debug" easier.
+ *          This linked-list(Pool) only be used while `printMallocSpace()`
+ *          calling. So, You can remove it if you don't need the
+ *          `printMallocSpace()`.
  *
- * @ready: Contain all the user freed space which had been allocated, also is a
- *         linked-list.
+ * @freeList: Contain all the user freed space which had been allocated, also is
+ * a linked-list.
+ *      + Reference: https://en.wikipedia.org/wiki/Free_list
  */
 static Queue q_manager;
 
@@ -53,8 +59,8 @@ static void *remove_queue_node(BaseBlock **indirect,
 
 void *mymalloc(size_t size)
 {
-    /* Check the ready space have a space allocated */
-    BaseBlock *newBlock = remove_queue_node(&(q_manager.ready), NULL, size);
+    /* Check the freeList space have a space allocated */
+    BaseBlock *newBlock = remove_queue_node(&(q_manager.freeList), NULL, size);
     if (!newBlock) {
         newBlock = (BaseBlock *) sbrk(0);
         void *request = sbrk(size + sizeof(BaseBlock));
@@ -74,8 +80,8 @@ void myfree(void *ptr)
         BaseBlock *toBeFreed = ptr - sizeof(BaseBlock);
         BaseBlock *beFreed =
             remove_queue_node(&(q_manager.using), toBeFreed, 0);
-        beFreed->next = q_manager.ready;
-        q_manager.ready = beFreed;
+        beFreed->next = q_manager.freeList;
+        q_manager.freeList = beFreed;
     }
 }
 
@@ -90,7 +96,7 @@ void *myrealloc(void *ptr, size_t size)
     if (size <= origin_block->size)
         return ptr;
 
-    /* Try malloc new space, and mount old to ready chain */
+    /* Try malloc new space, and mount old to freeList chain */
     BaseBlock *newBlock = mymalloc(size + sizeof(BaseBlock));
     if (newBlock) {
         memset(newBlock, 0, size);
@@ -113,9 +119,9 @@ void *mycalloc(size_t nmemb, size_t size)
 void printMallocSpace()
 {
     unsigned int total_alloced = 0;
-    if (likely(q_manager.using) || likely(q_manager.ready)) {
+    if (likely(q_manager.using) || likely(q_manager.freeList)) {
         printf("Readly Queue: ");
-        for (BaseBlock *tmp = q_manager.ready; tmp && ++total_alloced;
+        for (BaseBlock *tmp = q_manager.freeList; tmp && ++total_alloced;
              tmp = tmp->next)
             printf("%p[%ld] -> ", tmp, tmp->size);
 
