@@ -1,5 +1,7 @@
 #include "test.h"
 
+#include <signal.h>
+
 #include "mm.h"
 #define TEST_TYPES 6
 #define TEST_TIMES 10
@@ -13,6 +15,8 @@
     } while (0);
 
 #define FOR_TEST for (int index = 0; index < TEST_TIMES; index++)
+
+
 
 static void push_back(List *l, Obj *o)
 {
@@ -195,15 +199,16 @@ int testLargeObj(int viewTesting)
     TESTALLOCSUCCESS(str);
     strncpy(str, largeStringBasis, strlen(largeStringBasis));
 
-    while (1) {
+    /*
+     * In using object will up to 12GB.
+     * But ready(freed) object will up to 12GB, too.
+     * That is you can optimize the `myfree()` to save more memory.
+     */
+    while (result < 29) {
         /* Double the string */
         char *doubleStr = mymalloc((strlen(str) << 1) + 1);
 
-        if (!doubleStr) {
-            perror("The memory is full!\n");
-            fprintf(stderr, "Current string length is: %ld\n", strlen(str));
-            break;
-        }
+        TESTALLOCSUCCESS(doubleStr);
 
         /* Concatenate the 'largeStringBasis' behind of 'str'*/
         strncpy(doubleStr, str, strlen(str));
@@ -239,7 +244,7 @@ void testAll(int viewTesting)
     result[2].value = testBool(viewTesting);
     result[3].value = testPtr(viewTesting);
     result[4].value = testString(viewTesting);
-    // result[5].value = testLargeObj(viewTesting);
+    result[5].value = testLargeObj(viewTesting);
 
     for (int i = 0; i < TEST_TYPES; i++)
         printf("%10s:\t%d\n", result[i].topic, result[i].value);
