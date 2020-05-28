@@ -221,7 +221,7 @@ size_t testLargeObj(int viewTesting)
         strncpy(str, largeStringBasis, strlen(largeStringBasis));
 
         /*
-         * In using object will up to 8.2GB.
+         * In using object will up to 8.2TB.
          * But ready(freed) object will up to 8.2TB, too.
          * That is you can optimize the `myfree()` to save more memory.
          */
