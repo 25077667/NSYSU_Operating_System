@@ -1,7 +1,5 @@
 #include "test.h"
 
-#include <signal.h>
-
 #include "mm.h"
 #define TEST_TYPES 6
 #define TEST_TIMES 10
@@ -15,8 +13,6 @@
     } while (0);
 
 #define FOR_TEST for (int index = 0; index < TEST_TIMES; index++)
-
-
 
 static void push_back(List *l, Obj *o)
 {
@@ -80,8 +76,9 @@ int testStruct(int viewTesting)
             /* View test */
             if (viewTesting)
                 printf("%d %d\n", curr->data, i);
-            result += (curr->data == i++);
+
             /* check answer */
+            result += (curr->data == i++);
         }
 
         for (i = 0; i < 10; i++)
