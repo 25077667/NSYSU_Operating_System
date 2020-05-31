@@ -113,8 +113,6 @@ int Proc::doExecute(vector<FILE *> &bgPool)
         this->command += this->in_s;
 
         pid_t get_pid = 0;
-//		this->command.pop_back();
-	//cout << this->command << endl;
         auto result_fd = mypopen(this->command.c_str(), "r", &get_pid);
         if (result_fd == NULL) {
             errorCode = 65537;  // command not cfound
