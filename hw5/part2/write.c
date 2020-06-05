@@ -1,6 +1,6 @@
-#include "wirte.h"
+#include "write.h"
 
-void testWirte(const char *filename, const void *context)
+void testWrite(const char *filename, const void *context)
 {
     int fd;
     struct stat sb;
