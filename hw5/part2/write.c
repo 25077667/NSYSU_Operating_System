@@ -3,15 +3,17 @@
 void testWrite(const char *filename, const void *context)
 {
     int fd;
-    struct stat sb;
     void *dst;
 
     fd = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0x0777);
     if (fd == -1)
         handle_error("Open");
 
-    if (fstat(fd, &sb) == -1)
-        handle_error("fstat");
+    /*
+     * Move FD's file position to OFFSET bytes from the beginning of the file.
+     * And return the new file position.(ignaore here)
+     */
+    lseek(fd, strlen(context), SEEK_SET);
 
     /* write a dummy byte at the last location */
     if (write(fd, "", 1) != 1)
@@ -21,8 +23,10 @@ void testWrite(const char *filename, const void *context)
     if (dst == MAP_FAILED)
         handle_error("mmap");
 
-    memcpy(dst, context, strlen(context) + 1);
+    memcpy(dst, context, strlen(context));
+    /* Synchronize a file with a memory map */
+    msync(dst, getpagesize(), MS_SYNC);
 
-    munmap(dst, 0);
+    munmap(dst, getpagesize());
     close(fd);
 }
