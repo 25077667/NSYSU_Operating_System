@@ -273,7 +273,7 @@ int main()
         * For indexed allocation strategies, we also update indexed in memory. Also 0 I/Os.
 
 
-## 5. A certain computer provides its users with a virtual-memory space of 2 32 bytes. The computer has 2 18 bytes of physical memory. The virtual memory is implemented by paging, and the page size is 4096 bytes. A user process generates the virtual address 11123456. Explain how the system establishes the corresponding physical location. Distinguish between software and hardware operations.
+## 5. A certain computer provides its users with a virtual-memory space of $2^{32}$ bytes. The computer has $2^{18}$ bytes of physical memory. The virtual memory is implemented by paging, and the page size is 4096 bytes. A user process generates the virtual address 11123456. Explain how the system establishes the corresponding physical location. Distinguish between software and hardware operations.
 
 :::warning
 I guess that 11123456 means "0x11123456".
