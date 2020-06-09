@@ -11,7 +11,7 @@ all: dep
 	$(CC) $(CFLAGS) *.o -o $(OUT)
 
 clean:
-	rm -f $(OUT) *.o .gdb_history peda-session-* *.so
+	rm -f $(OUT) *.o .gdb_history peda-session-* *.so foo
 
 check:
 	valgrind -v --tool=memcheck --leak-check=full --show-leak-kinds=all ./$(OUT)
