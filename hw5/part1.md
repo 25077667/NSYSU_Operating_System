@@ -36,7 +36,7 @@ Then,
 * For **non-adjacent** blocks of file to each other:
     * $(5 + 10 + 0.02) \cdot 100 = 1502$ ms
 * For adjacent blocks of file to each other:
-    * $(0.1 + 10 + 0.02) \cdot 100 = 1012$ ms
+    * $(0.1 \cdot 2 + 10 + 0.02) \cdot 100 = 1022$ ms
 
 
 ## 3. Consider the following page reference string:
