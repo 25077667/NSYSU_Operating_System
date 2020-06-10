@@ -5,9 +5,9 @@ void testWrite(const char *filename, const void *context)
     int fd;
     void *dst;
 
-    fd = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0x0777);
+    fd = open(filename, O_RDWR | O_CREAT | O_TRUNC, 00777);
     if (fd == -1)
-        handle_error("Open");
+        handle_error("write open");
 
     /*
      * Move FD's file position to OFFSET bytes from the beginning of the file.
@@ -24,8 +24,6 @@ void testWrite(const char *filename, const void *context)
         handle_error("mmap");
 
     memcpy(dst, context, strlen(context));
-    /* Synchronize a file with a memory map */
-    msync(dst, getpagesize(), MS_SYNC);
 
     munmap(dst, getpagesize());
     close(fd);
