@@ -289,3 +289,6 @@ But we usually used non-prefix to be decimal.
     * The virtual address in binary form is
 		`0000 0000 1010 1001 1011 1011 0000 0000`
         Since the page size is $2^{12}$, the page table size is $2^{20}$. Therefore, the low-order 12 bits (1011 0000 0000) are used as the displacement into the page, while the remaining 20 bits (0000 0000 1010 1001 1011) are used as the displacement in the page table.
+        
+* Distinguish between software and hardware operations:
+    * In hardware part, witch handles dynamic address traslation. But software part's operations only take care of pages I/O.
