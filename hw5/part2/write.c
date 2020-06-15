@@ -24,6 +24,7 @@ void testWrite(const char *filename, const void *context)
         handle_error("mmap");
 
     memcpy(dst, context, strlen(context));
+    sleep(10);
 
     munmap(dst, getpagesize());
     close(fd);
