@@ -23,7 +23,12 @@ void testWrite(const char *filename, const void *context)
     if (dst == MAP_FAILED)
         handle_error("mmap");
 
+    /*
+     * Write some context to the file right?
+     * Yeah, guess what? Believe in yourself!
+     */
     memcpy(dst, context, strlen(context));
+    /* Here is the sleep 10 seconds to wait read this file form mmap */
     sleep(10);
 
     munmap(dst, getpagesize());
