@@ -15,7 +15,9 @@ int main()
      * each process map the "foo" file into their memory space.
      *
      * Yeah, it's immediately.
-     * Why? Because parent wait for child read done and exit.
+     * Add sleep(10) in "write.c" to sleep for 10 seconds.
+     * (You can see that "Before munmap() the file, the child get the context
+     * writen in.")
      */
     pid_t pid = fork();
     if (pid) {
