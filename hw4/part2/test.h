@@ -24,5 +24,5 @@ int testPtr(int viewTesting);
 int testString(int viewTesting);
 
 /* The full of memory case */
-int testLargeObj(int viewTesting);
+size_t testLargeObj(int viewTesting);
 #endif

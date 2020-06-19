@@ -5,9 +5,10 @@
 class Semaphore
 {
 public:
-    Semaphore(int);
-    inline void notify();
-    inline void wait();
+    /* Because there is a "chopstick", hence we use 1 to initialize */
+    Semaphore(int count_ = 1) : count(count_) {}
+    void notify();
+    void wait();
 
 private:
     std::mutex mtx;
