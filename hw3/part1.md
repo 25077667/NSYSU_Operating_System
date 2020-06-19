@@ -8,7 +8,7 @@ date: 5/11/2020
 This homework in [Hackmd Link](https://hackmd.io/@25077667/By8upiLcL)
 ---
 
-# 1. Explain what memory-mapped I/O is and how it works.
+## 1. Explain what memory-mapped I/O is and how it works.
 
 * What is MMI/O?
     A method for mapping an I/O port to a process's virtual memory space. If the file (devices will be treated as a file) uses memory-mapped I/O then you can write to the specific memory address (mapped by MMI/O) and the file will be updated with the new data.
@@ -24,7 +24,7 @@ This homework in [Hackmd Link](https://hackmd.io/@25077667/By8upiLcL)
 
     For example: [Generic driver for memory-mapped GPIO controllers](https://elixir.bootlin.com/linux/latest/source/drivers/gpio/gpio-mmio.c)
     
-# 2. Explain what DMA is and how it works.
+## 2. Explain what DMA is and how it works.
 * What is DMA?
     A feature of computer systems that allows certain hardware subsystems to access main system memory, independent of the CPUs. Without DMA, when the CPU is using programmed input/output, it is typically fully occupied for the entire duration of the read or write operation, and is thus unavailable to perform other work. With DMA, the CPU first initiates the transfer, then it does other operations while the transfer is in progress, and it finally receives an interrupt from the DMA controller (DMAC) when the operation is done.
 
@@ -48,7 +48,7 @@ This homework in [Hackmd Link](https://hackmd.io/@25077667/By8upiLcL)
     * ==And so on==...
     [More reference](https://www.oreilly.com/library/view/linux-device-drivers/0596005903/ch15.html)
     
-# 3. Consider the following set of processes, with the length of the CPU-burst time given in milliseconds:
+## 3. Consider the following set of processes, with the length of the CPU-burst time given in milliseconds:
 
 | Process | Burst Time | Priority |
 |:-------:|:----------:|:--------:|
@@ -133,7 +133,7 @@ gantt
 Is "SJF", the total waiting time over all processes is 17.
 
 
-# 4. A UNIX process has two parts—the user part and the kernel part. Is the kernel part like a subroutine and a coroutine? Why?
+## 4. A UNIX process has two parts—the user part and the kernel part. Is the kernel part like a subroutine and a coroutine? Why?
 
 Well, I think it is like a subroutine procedure.
 The process in the user space invokes the kernel space, the kernel space starts out in the same place.

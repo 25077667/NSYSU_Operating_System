@@ -2,6 +2,9 @@ The operating system homework public repo.
 
 Teacher: [Chiang P.](http://www.oslab.cse.nsysu.edu.tw/mcchiang.html)
 
+## Menu
+[Link](https://hackmd.io/@25077667/os-hw)
+
 ## TODO
 Redo all homework to make it better in this summer(2020.07-2020.08).
 

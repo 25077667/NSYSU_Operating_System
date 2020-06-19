@@ -197,7 +197,26 @@ int testString(int viewTesting)
     return result;
 }
 
-
+/*
+ * Based on OOM-killer to allocate the largest capacity object.
+ * Or your disk(swap) size is enough to store pages.
+ *
+ * @return: the lacated object size.
+ *
+ * This function will fork a child process to test mymalloc a large object, if
+ * the memory is full or swap space is full, OS will kill it(child process)
+ * automatically.
+ *
+ * Before OS kill this child process, the child process keeps sending the
+ * locating size(not "located", actually the located memory will be freed by
+ * myfree) to parent process. When the child process be killed, the pipeline
+ * will be closed by OS, then the parent process will receive the EOF of
+ * pipeline. Then sent the size back to the caller.
+ *
+ * Reference:
+ * * OOM-killer:
+ * https://www.kernel.org/doc/gorman/html/understand/understand016.html
+ */
 size_t testLargeObj(int viewTesting)
 {
     int pipeFd[2];
@@ -213,7 +232,7 @@ size_t testLargeObj(int viewTesting)
         close(pipeFd[0]);
 
         static const char *largeStringBasis = "THE_LARGE_STRING_BASIS.";
-        int result = 0;
+        int level = 0;
 
         /* Copy large string to str in first time */
         char *str = mycalloc(strlen(largeStringBasis), sizeof(char));
@@ -222,10 +241,9 @@ size_t testLargeObj(int viewTesting)
 
         /*
          * In using object will up to 8.2TB.
-         * But ready(freed) object will up to 8.2TB, too.
-         * That is you can optimize the `myfree()` to save more memory.
+         * Actually, it's 824633720832 Bytes.
          */
-        while (result < 35) {
+        while (level++ < 35) {
             /* Send current progress rate to parent */
             size_t len = strlen(str);
             ssize_t sendSize = write(pipeFd[1], &len, sizeof(size_t));
@@ -242,7 +260,6 @@ size_t testLargeObj(int viewTesting)
             strncat(doubleStr, str, strlen(str));
 
             swap((void *) &doubleStr, (void *) &str);
-            result++;
             myfree(doubleStr);
         }
 
@@ -269,6 +286,7 @@ size_t testLargeObj(int viewTesting)
 
 void testAll(int viewTesting)
 {
+    /* Designated Initializer in C99, but not implemented in GNU C++ */
     struct Result {
         char *topic;
         size_t value;
@@ -287,7 +305,4 @@ void testAll(int viewTesting)
 
     for (int i = 0; i < TEST_TYPES; i++)
         printf("%10s:\t%ld\n", result[i].topic, result[i].value);
-    printf("Test Finlished!\n");
-    printf("\nTotal used spaces:\n");
-    printMallocSpace();
 }
