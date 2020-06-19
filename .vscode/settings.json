@@ -18,11 +18,17 @@
         "string": "cpp",
         "unordered_map": "cpp",
         "string_view": "cpp",
+<<<<<<< HEAD
         "functional": "cpp",
         "*.tcc": "cpp",
         "fstream": "cpp",
         "limits": "cpp",
         "cstdio": "cpp",
         "iostream": "cpp"
+=======
+        "chrono": "cpp",
+        "thread": "cpp",
+        "functional": "c"
+>>>>>>> master
     }
 }

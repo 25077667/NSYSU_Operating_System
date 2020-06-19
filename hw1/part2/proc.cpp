@@ -173,6 +173,7 @@ int Proc::doExecute(vector<FILE *> &bgPool)
         if (result_fd == NULL) {
             errorCode = ERR_CMD_NOT_FOUND;  // command not cfound
         } else {
+			this->command.pop_back();
             if (this->command.back() == '&') {
                 cout << '[' << get_pid << ']' << endl;
                 bgPool.push_back(result_fd);
