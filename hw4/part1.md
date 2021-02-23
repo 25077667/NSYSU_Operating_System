@@ -8,7 +8,7 @@ date: 5/28/2020
 This homework in [Hackmd Link](https://hackmd.io/@25077667/HJjWLCniU)
 ---
 
-1. A computer has four page frames. The time of loading, time of last access, and the R and M bits for each page are as shown below (the times are in clock ticks):
+## 1. A computer has four page frames. The time of loading, time of last access, and the R and M bits for each page are as shown below (the times are in clock ticks):
 
 | Page | Loaded | Last Ref. | R   | M   |
 | ---- | ------ | --------- | --- | --- |
@@ -64,7 +64,7 @@ Page 0, because the page 0 R bit is 0, and the second-earliest page loaded. The 
 [^first]: https://sites.cs.ucsb.edu/~chris/teaching/cs170/doc/cs170-08.pdf
 [^second]:https://en.wikipedia.org/wiki/Page_replacement_algorithm#Least_recently_used
 
-2. A small computer has 8 page frames, each containing a page. The page frames contain virtual pages A, C, G, H, B, L, N , and D in that order. Their respective load times were 18, 23, 5, 7, 32, 19, 3, and 8. Their reference bits are 1, 0, 1, 1, 0, 1, 1, and 0 and their modified bits are 1, 1, 1, 0, 0, 0, 1, and 1, respectively. Which page will the second chance page replacement algorithm replace?
+## 2. A small computer has 8 page frames, each containing a page. The page frames contain virtual pages A, C, G, H, B, L, N , and D in that order. Their respective load times were 18, 23, 5, 7, 32, 19, 3, and 8. Their reference bits are 1, 0, 1, 1, 0, 1, 1, and 0 and their modified bits are 1, 1, 1, 0, 0, 0, 1, and 1, respectively. Which page will the second chance page replacement algorithm replace?
 D.
 
 Construct the FIFO queue first.
@@ -72,7 +72,7 @@ N -> G-> H -> D -> A -> L -> C -> B
 Then, some as question 1's (d) algorithm.
 Therefore we can find D.
 
-3. What is the difference between a physical address and a virtual address?
+## 3. What is the difference between a physical address and a virtual address?
 
 * Physical addresses refer to hardware addresses of physical memory.
 * Virtual addresses refer to the virtual store viewed by the process.
@@ -80,11 +80,11 @@ Therefore we can find D.
 * Virtual space is limited by size of virtual addresses. (not physical addresses)
 * Virtual space and physical memory space are independent.
 
-4. Are there any circumstances in which clock and second chance choose different pages to replace? If so, what are they?
+## 4. Are there any circumstances in which clock and second chance choose different pages to replace? If so, what are they?
 Well, it's same. Just in different presentation.
 
 
-5. A small computer has four page frames. At the first clock tick, the R bits are 0111 (page 0 is 0, the rest are 1). At subsequent clock ticks, the values are 1011, 1010, 1101, 0010, 1010, 1100, and 0001. If the aging algorithm is used with an 8-bit counter, give the values of the four counters after the last ticks.
+## 5. A small computer has four page frames. At the first clock tick, the R bits are 0111 (page 0 is 0, the rest are 1). At subsequent clock ticks, the values are 1011, 1010, 1101, 0010, 1010, 1100, and 0001. If the aging algorithm is used with an 8-bit counter, give the values of the four counters after the last ticks.
 
 | pages  | counter  |
 | ------ | -------- |

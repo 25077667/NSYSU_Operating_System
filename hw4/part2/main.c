@@ -10,6 +10,9 @@ int main()
     viewResult = getchar();
 
     testAll(CHECK_Y(viewResult));
+    printf("Test Finlished!\n");
+    printf("\nTotal used spaces:\n");
+    printMallocSpace();
 
     return 0;
 }

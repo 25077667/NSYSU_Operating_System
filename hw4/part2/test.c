@@ -1,5 +1,9 @@
 #include "test.h"
 
+#include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include "mm.h"
 #define TEST_TYPES 6
 #define TEST_TIMES 10
@@ -13,6 +17,13 @@
     } while (0);
 
 #define FOR_TEST for (int index = 0; index < TEST_TIMES; index++)
+
+#define MAX(a, b)               \
+    ({                          \
+        __typeof__(a) _a = (a); \
+        __typeof__(b) _b = (b); \
+        _a > _b ? _a : _b;      \
+    })
 
 static void push_back(List *l, Obj *o)
 {
@@ -186,50 +197,99 @@ int testString(int viewTesting)
     return result;
 }
 
-int testLargeObj(int viewTesting)
+/*
+ * Based on OOM-killer to allocate the largest capacity object.
+ * Or your disk(swap) size is enough to store pages.
+ *
+ * @return: the lacated object size.
+ *
+ * This function will fork a child process to test mymalloc a large object, if
+ * the memory is full or swap space is full, OS will kill it(child process)
+ * automatically.
+ *
+ * Before OS kill this child process, the child process keeps sending the
+ * locating size(not "located", actually the located memory will be freed by
+ * myfree) to parent process. When the child process be killed, the pipeline
+ * will be closed by OS, then the parent process will receive the EOF of
+ * pipeline. Then sent the size back to the caller.
+ *
+ * Reference:
+ * * OOM-killer:
+ * https://www.kernel.org/doc/gorman/html/understand/understand016.html
+ */
+size_t testLargeObj(int viewTesting)
 {
-    static const char *largeStringBasis = "THE_LARGE_STRING_BASIS.";
-    int result = 0;
-
-    /* Copy large string to str in first time */
-    char *str = mycalloc(strlen(largeStringBasis), sizeof(char));
-    TESTALLOCSUCCESS(str);
-    strncpy(str, largeStringBasis, strlen(largeStringBasis));
-
-    /*
-     * In using object will up to 12GB.
-     * But ready(freed) object will up to 12GB, too.
-     * That is you can optimize the `myfree()` to save more memory.
-     */
-    while (result < 29) {
-        /* Double the string */
-        char *doubleStr = mymalloc((strlen(str) << 1) + 1);
-
-        TESTALLOCSUCCESS(doubleStr);
-
-        /* Concatenate the 'largeStringBasis' behind of 'str'*/
-        strncpy(doubleStr, str, strlen(str));
-        strncat(doubleStr, str, strlen(str));
-
-        swap((void *) &doubleStr, (void *) &str);
-        result++;
-        myfree(doubleStr);
+    int pipeFd[2];
+    if (pipe(pipeFd) < 0) {
+        perror("Pipe error!");
+        return -1;
     }
 
-    if (viewTesting)
-        printf("%s\n", str);
+    pid_t pid = fork();
+    /* Is child */
+    if (pid == 0) {
+        /* Init IPC */
+        close(pipeFd[0]);
 
-    /* Free alloced */
-    myfree(str);
+        static const char *largeStringBasis = "THE_LARGE_STRING_BASIS.";
+        int level = 0;
 
-    return result;
+        /* Copy large string to str in first time */
+        char *str = mycalloc(strlen(largeStringBasis), sizeof(char));
+        TESTALLOCSUCCESS(str);
+        strncpy(str, largeStringBasis, strlen(largeStringBasis));
+
+        /*
+         * In using object will up to 8.2TB.
+         * Actually, it's 824633720832 Bytes.
+         */
+        while (level++ < 35) {
+            /* Send current progress rate to parent */
+            size_t len = strlen(str);
+            ssize_t sendSize = write(pipeFd[1], &len, sizeof(size_t));
+            if (!sendSize)
+                perror("Broken pipe: ");
+
+            /* Double the string */
+            char *doubleStr = mymalloc((strlen(str) << 1) + 1);
+
+            TESTALLOCSUCCESS(doubleStr);
+
+            /* Concatenate the 'largeStringBasis' behind of 'str'*/
+            strncpy(doubleStr, str, strlen(str));
+            strncat(doubleStr, str, strlen(str));
+
+            swap((void *) &doubleStr, (void *) &str);
+            myfree(doubleStr);
+        }
+
+        if (viewTesting)
+            printf("%s\n", str);
+
+        /* Free alloced */
+        myfree(str);
+
+        /* End of IPC */
+        close(pipeFd[1]);
+        _exit(0);
+    } else if (pid != -1) {
+        size_t allocatedSize, tmp = 0;
+        close(pipeFd[1]);
+        while (read(pipeFd[0], &allocatedSize, sizeof(size_t)) > 0)
+            allocatedSize = MAX(tmp, allocatedSize);
+        return allocatedSize;
+    } else {
+        perror("fork failed");
+        return -2; /* fork failed */
+    }
 }
 
 void testAll(int viewTesting)
 {
+    /* Designated Initializer in C99, but not implemented in GNU C++ */
     struct Result {
         char *topic;
-        int value;
+        size_t value;
     } result[TEST_TYPES] = {
         {.topic = "struct", .value = 0}, {.topic = "int", .value = 0},
         {.topic = "bool", .value = 0},   {.topic = "pointer", .value = 0},
@@ -244,8 +304,5 @@ void testAll(int viewTesting)
     result[5].value = testLargeObj(viewTesting);
 
     for (int i = 0; i < TEST_TYPES; i++)
-        printf("%10s:\t%d\n", result[i].topic, result[i].value);
-    printf("Test Finlished!\n");
-    printf("\nTotal used spaces:\n");
-    printMallocSpace();
+        printf("%10s:\t%ld\n", result[i].topic, result[i].value);
 }
