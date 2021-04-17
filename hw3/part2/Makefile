@@ -1,13 +1,13 @@
 CC = g++
 CFLAGS = -Wall -W -Og -g
-CPPFLAGS = -Wall -W -Og -g -std=c++14
+CPPFLAGS = -Wall -W -Og -g -std=c++17
 OUT = part2.elf
 
 all: dep
 	$(CC) -o $(OUT) *.o -lpthread
 
 dep: 
-	$(CC) $(CPPFLAGS) -c semaphore.cpp
+	$(CC) $(CPPFLAGS) -c monitor.cpp
 	$(CC) $(CPPFLAGS) -c philosopher.cpp
 	$(CC) $(CPPFLAGS) -c main.cpp
 
