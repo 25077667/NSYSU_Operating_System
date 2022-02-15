@@ -32,7 +32,6 @@ char **commandParser(const char *input, size_t *columns)
         if (commands[i] == (void *) -1)
             handle_error("Allocate sharing memory failed");
         memcpy(commands[i], prev_cut, cut_len);
-
         prev_cut += cut_len + 1;  // skip the pipe
     }
     free(copied);

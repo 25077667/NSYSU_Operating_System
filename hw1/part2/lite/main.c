@@ -31,7 +31,7 @@ static void do_exec(char **commands, size_t index)
         while (!notWait && waitpid(pid, &status, WUNTRACED | WCONTINUED) &&
                !WIFEXITED(status) && !WIFSIGNALED(status))
             ;
-        (notWait) ? printf("[%d]\n", pid) : 0;
+        (notWait) ? printf("[%d]\n", pid) : (void)"trash";
         return;
     }
     /* All commands would be executed here
@@ -82,7 +82,7 @@ static void do_exec(char **commands, size_t index)
                                                    : "dup in/out both failed"));
     char *arg[] = {getArgs(commands[index], 0), getArgs(commands[index], 1),
                    NULL};
-    (execvp(arg[0], arg) < 0) ? puts("Command not found!") : 0;
+    (execvp(arg[0], arg) < 0) ? puts("Command not found!") : (void)"trash";
 
     /* If it's NULL ptr free another ptr.
      *
@@ -121,7 +121,7 @@ int main()
             handle_error("mmap failed");
         /*Only "quit" or 'q' to exit, rather than exit */
         keeping = strcmp(input, "quit") && strcmp(input, "q");
-        (keeping) ? do_exec(commands, command_num), 1 : 0;
+        (keeping) ? do_exec(commands, command_num), "trash" : "trash";
         freeCommands(commands, command_num);
         free(input);
     }
