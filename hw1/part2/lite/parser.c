@@ -13,7 +13,6 @@ char **commandParser(const char *input, size_t *columns)
 {
     size_t input_len = strlen(input);
     (*columns) = getColumns(input);
-
     char **commands = (char **) malloc(sizeof(char *) * (*columns));
     char *copied = calloc(input_len + 1, sizeof(char));
     char *prev_cut = copied;
@@ -103,5 +102,5 @@ char *getArgs(const char *command, int option)
     memcpy(result, command + ((option) ? diameter + 1 : 0),
            (option) ? (pureCmd - diameter) : diameter);
     /* If it's empty string free it and return NULL, else return the origin */
-    return (strlen(result) ? (result) : (free(result), NULL));
+    return strlen(result) ? result : (free(result), NULL);
 }

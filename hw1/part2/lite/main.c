@@ -31,8 +31,7 @@ static void do_exec(char **commands, size_t index)
         while (!notWait && waitpid(pid, &status, WUNTRACED | WCONTINUED) &&
                !WIFEXITED(status) && !WIFSIGNALED(status))
             ;
-        if (notWait)
-            printf("[%d]\n", pid);
+        (notWait) ? printf("[%d]\n", pid) : 0;
         return;
     }
     /* All commands would be executed here
@@ -101,8 +100,8 @@ static void do_exec(char **commands, size_t index)
      * ```
      * [1] https://pubs.opengroup.org/onlinepubs/009695399/functions/malloc.html
      */
-    free((src) ? src : malloc(0));
-    free((dst) ? dst : malloc(0));
+    free(src ? src : malloc(0));
+    free(dst ? dst : malloc(0));
     free(arg[0] ? arg[0] : malloc(0));
     free(arg[1] ? arg[1] : malloc(0));
     /* Kill all child process */
@@ -115,7 +114,6 @@ int main()
     char *input = NULL, **commands;
     while (keeping) {
         size_t command_num;
-
         while (printf("$ "), input = inputString(), !input)
             ;
         commands = commandParser(input, &command_num);
@@ -123,8 +121,7 @@ int main()
             handle_error("mmap failed");
         /*Only "quit" or 'q' to exit, rather than exit */
         keeping = strcmp(input, "quit") && strcmp(input, "q");
-        if (keeping)
-            do_exec(commands, command_num);
+        (keeping) ? do_exec(commands, command_num), 1 : 0;
         freeCommands(commands, command_num);
         free(input);
     }
