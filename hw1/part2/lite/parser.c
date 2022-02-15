@@ -5,8 +5,7 @@ static inline size_t getColumns(const char *input)
 {
     size_t columns = 1;
     for (int i = 0; input[i]; i++)
-        if (input[i] == '|')
-            columns++;
+        columns += input[i] == '|';
     return columns;
 }
 
