@@ -5,8 +5,7 @@ static inline size_t getColumns(const char *input)
 {
     size_t columns = 1;
     for (int i = 0; input[i]; i++)
-        if (input[i] == '|')
-            columns++;
+        columns += input[i] == '|';
     return columns;
 }
 
@@ -14,7 +13,6 @@ char **commandParser(const char *input, size_t *columns)
 {
     size_t input_len = strlen(input);
     (*columns) = getColumns(input);
-
     char **commands = (char **) malloc(sizeof(char *) * (*columns));
     char *copied = calloc(input_len + 1, sizeof(char));
     char *prev_cut = copied;
@@ -34,7 +32,6 @@ char **commandParser(const char *input, size_t *columns)
         if (commands[i] == (void *) -1)
             handle_error("Allocate sharing memory failed");
         memcpy(commands[i], prev_cut, cut_len);
-
         prev_cut += cut_len + 1;  // skip the pipe
     }
     free(copied);
@@ -104,5 +101,5 @@ char *getArgs(const char *command, int option)
     memcpy(result, command + ((option) ? diameter + 1 : 0),
            (option) ? (pureCmd - diameter) : diameter);
     /* If it's empty string free it and return NULL, else return the origin */
-    return (strlen(result) ? (result) : (free(result), NULL));
+    return strlen(result) ? result : (free(result), NULL);
 }

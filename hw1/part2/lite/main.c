@@ -31,8 +31,7 @@ static void do_exec(char **commands, size_t index)
         while (!notWait && waitpid(pid, &status, WUNTRACED | WCONTINUED) &&
                !WIFEXITED(status) && !WIFSIGNALED(status))
             ;
-        if (notWait)
-            printf("[%d]\n", pid);
+        (notWait) ? printf("[%d]\n", pid) : (void) "trash";
         return;
     }
     /* All commands would be executed here
@@ -83,8 +82,7 @@ static void do_exec(char **commands, size_t index)
                                                    : "dup in/out both failed"));
     char *arg[] = {getArgs(commands[index], 0), getArgs(commands[index], 1),
                    NULL};
-    if (execvp(arg[0], arg) < 0)
-        printf("Command not found!\n");
+    (execvp(arg[0], arg) < 0) ? puts("Command not found!") : (void) "trash";
 
     /* If it's NULL ptr free another ptr.
      *
@@ -94,7 +92,7 @@ static void do_exec(char **commands, size_t index)
      * implementation defined: either a null pointer is returned, or the
      * behavior is as if the size were some nonzero value, except that the
      * returned pointer shall not be used to access an object.
-     * 
+     *
      * TL;DR:
      * ```
      * If size is 0, either a null pointer or a unique pointer that can be
@@ -102,8 +100,8 @@ static void do_exec(char **commands, size_t index)
      * ```
      * [1] https://pubs.opengroup.org/onlinepubs/009695399/functions/malloc.html
      */
-    free((src) ? src : malloc(0));
-    free((dst) ? dst : malloc(0));
+    free(src ? src : malloc(0));
+    free(dst ? dst : malloc(0));
     free(arg[0] ? arg[0] : malloc(0));
     free(arg[1] ? arg[1] : malloc(0));
     /* Kill all child process */
@@ -113,22 +111,17 @@ static void do_exec(char **commands, size_t index)
 int main()
 {
     int keeping = 1;
-    char *input, **commands;
+    char *input = NULL, **commands;
     while (keeping) {
-        printf("$ ");
         size_t command_num;
-
-        input = inputString();
-        if (!input)
-            continue;
+        while (printf("$ "), input = inputString(), !input)
+            ;
         commands = commandParser(input, &command_num);
         if (commands == (void *) -1)
             handle_error("mmap failed");
         /*Only "quit" or 'q' to exit, rather than exit */
-        if (strcmp(input, "quit") == 0 || strcmp(input, "q") == 0)
-            keeping = 0;
-        else
-            do_exec(commands, command_num);
+        keeping = strcmp(input, "quit") && strcmp(input, "q");
+        (keeping) ? do_exec(commands, command_num), "trash" : "trash";
         freeCommands(commands, command_num);
         free(input);
     }
