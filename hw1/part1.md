@@ -49,6 +49,9 @@ I put all commands in the ` ` zone.
     * `cd ~/Download/linux-*`
 8. Copy current config to here:
     * `cp /boot/config-*-generic .config`
+9. Exclude the debug info, or it will take even more time:
+    * Type `make menuconfig`.  
+    * Enter ==Kernel hacking==, then ==Compile-time checks and compiler options==, excluding ==Compile the kernel with debug info== and save it.  
 10. You have 2 methods to edit the version info:
     * Makefile
         * `vim Makefile`
@@ -66,6 +69,8 @@ I put all commands in the ` ` zone.
 8. Make!
     * `make -j $(nproc)`
         * The `$(nproc)` can get the number of CPUs in your computer, that is full speed to run it!
+
+:::you might get error message: `No rule to make target 'debian/canonical-certs.pem', ...`, [try this](https://stackoverflow.com/questions/67670169/compiling-kernel-gives-error-no-rule-to-make-target-debian-certs-debian-uefi-ce):::
 9. Make module install
     * `sudo make modules_install`
 
