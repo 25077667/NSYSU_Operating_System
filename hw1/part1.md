@@ -69,6 +69,7 @@ I put all commands in the ` ` zone.
 8. Make!
     * `make -j $(nproc)`
         * The `$(nproc)` can get the number of CPUs in your computer, that is full speed to run it!
+
 :::you might get error message: `No rule to make target 'debian/canonical-certs.pem', ...`, [try this](https://stackoverflow.com/questions/67670169/compiling-kernel-gives-error-no-rule-to-make-target-debian-certs-debian-uefi-ce):::
 9. Make module install
     * `sudo make modules_install`
