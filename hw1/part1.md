@@ -70,18 +70,19 @@ I put all commands in the ` ` zone.
     * `make -j $(nproc)`
         * The `$(nproc)` can get the number of CPUs in your computer, that is full speed to run it!
 
-:::you might get error message: `No rule to make target 'debian/canonical-certs.pem', ...`, [try this](https://stackoverflow.com/questions/67670169/compiling-kernel-gives-error-no-rule-to-make-target-debian-certs-debian-uefi-ce):::
-9. Make module install
+:::you might get error message: `No rule to make target 'debian/canonical-certs.pem', ...`, [try this](https://stackoverflow.com/questions/67670169/compiling-kernel-gives-error-no-rule-to-make-target-debian-certs-debian-uefi-ce):::  
+
+10. Make module install
     * `sudo make modules_install`
 
-10. Install it to /boot
+11. Install it to /boot
     * `sudo make install`
-11. Update Grub2
+12. Update Grub2
     * `sudo update-initramfs -c -k <THE VERSION YOU COMPILED>`
         * Of course, it contains your "stuID" in the end. That you append on.
     * `sudo update-grub`
 
-12. Reboot!
+13. Reboot!
     * `reboot`
 
 Done.
